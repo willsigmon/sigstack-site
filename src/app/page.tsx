@@ -351,6 +351,49 @@ const SectionIcon = ({ type }: { type: "brain" | "voice" | "terminal" | "cloud" 
   return <span className="text-purple-300">{icons[type]}</span>;
 };
 
+// Floating accent dots for section decoration
+function FloatingAccents({ count = 6, color = "purple" }: { count?: number; color?: "purple" | "blue" | "pink" | "cyan" }) {
+  const [accents, setAccents] = useState<Array<{ left: number; top: number; size: number; delay: number }>>([]);
+
+  useEffect(() => {
+    setAccents(
+      [...Array(count)].map(() => ({
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        size: 2 + Math.random() * 4,
+        delay: Math.random() * 2,
+      }))
+    );
+  }, [count]);
+
+  if (accents.length === 0) return null;
+
+  const colors = {
+    purple: "bg-purple-400",
+    blue: "bg-blue-400",
+    pink: "bg-pink-400",
+    cyan: "bg-cyan-400",
+  };
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {accents.map((accent, i) => (
+        <div
+          key={i}
+          className={`absolute ${colors[color]} rounded-full animate-float opacity-30`}
+          style={{
+            left: `${accent.left}%`,
+            top: `${accent.top}%`,
+            width: accent.size,
+            height: accent.size,
+            animationDelay: `${accent.delay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 // Floating particles component - positions generated client-side to avoid hydration mismatch
 function FloatingParticles() {
   const [particles, setParticles] = useState<Array<{ left: number; top: number; duration: number; delay: number }>>([]);
@@ -507,10 +550,16 @@ function StackingTitle({ onComplete }: { onComplete: () => void }) {
   );
 }
 
-// Static title with depth and shadow
-function StaticTitle() {
+// Static title with depth and shadow - clickable to replay animation
+function StaticTitle({ onClick }: { onClick?: () => void }) {
   return (
-    <h1 className="text-6xl sm:text-8xl font-black tracking-tight">
+    <motion.h1
+      className="text-6xl sm:text-8xl font-black tracking-tight cursor-pointer"
+      onClick={onClick}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      title="Click to replay animation"
+    >
       <span
         className="bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent"
         style={{
@@ -520,7 +569,7 @@ function StaticTitle() {
       >
         sigstack
       </span>
-    </h1>
+    </motion.h1>
   );
 }
 
@@ -534,9 +583,9 @@ export default function Home() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
 
-  // First visit animation state
-  const [showAnimation, setShowAnimation] = useState(false);
-  const [animationComplete, setAnimationComplete] = useState(false);
+  // Animation state
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationKey, setAnimationKey] = useState(0);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -544,54 +593,47 @@ export default function Home() {
     // Check if this is first visit
     const hasVisited = localStorage.getItem("sigstack-visited");
     if (!hasVisited) {
-      setShowAnimation(true);
+      setIsAnimating(true);
       localStorage.setItem("sigstack-visited", "true");
-    } else {
-      setAnimationComplete(true);
     }
   }, []);
 
   const handleAnimationComplete = () => {
-    setAnimationComplete(true);
+    setIsAnimating(false);
+  };
+
+  const replayAnimation = () => {
+    setAnimationKey(prev => prev + 1);
+    setIsAnimating(true);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-[#0f0a1f] to-slate-900 overflow-hidden">
-      {/* Breathing background wallpaper */}
+      {/* Breathing background wallpaper - CSS animations for smoothness */}
       <div className="fixed inset-0 -z-10">
-        {/* Main breathing gradient */}
-        <motion.div
-          className="absolute inset-0"
-          animate={{
-            background: [
-              `radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.25), transparent),
-               radial-gradient(ellipse 60% 40% at 100% 50%, rgba(59, 130, 246, 0.15), transparent),
-               radial-gradient(ellipse 50% 30% at 0% 80%, rgba(236, 72, 153, 0.1), transparent)`,
-              `radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.35), transparent),
-               radial-gradient(ellipse 60% 40% at 100% 50%, rgba(59, 130, 246, 0.25), transparent),
-               radial-gradient(ellipse 50% 30% at 0% 80%, rgba(236, 72, 153, 0.2), transparent)`,
-              `radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.25), transparent),
-               radial-gradient(ellipse 60% 40% at 100% 50%, rgba(59, 130, 246, 0.15), transparent),
-               radial-gradient(ellipse 50% 30% at 0% 80%, rgba(236, 72, 153, 0.1), transparent)`,
-            ],
+        {/* Main breathing gradient - pure CSS */}
+        <div
+          className="absolute inset-0 animate-breathe"
+          style={{
+            background: `
+              radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.3), transparent),
+              radial-gradient(ellipse 60% 40% at 100% 50%, rgba(59, 130, 246, 0.2), transparent),
+              radial-gradient(ellipse 50% 30% at 0% 80%, rgba(236, 72, 153, 0.15), transparent)
+            `,
           }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
         {/* Secondary breathing layer */}
-        <motion.div
-          className="absolute inset-0"
+        <div
+          className="absolute inset-0 animate-breathe-slow"
           style={{
-            background: `radial-gradient(circle at 30% 70%, rgba(168, 85, 247, 0.1), transparent 50%),
-                         radial-gradient(circle at 70% 30%, rgba(34, 211, 238, 0.08), transparent 50%)`,
+            background: `
+              radial-gradient(circle at 30% 70%, rgba(168, 85, 247, 0.15), transparent 50%),
+              radial-gradient(circle at 70% 30%, rgba(34, 211, 238, 0.12), transparent 50%)
+            `,
           }}
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.5, 0.8, 0.5],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
         {/* Mesh grid overlay */}
-        <motion.div
+        <div
           className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage: `
@@ -600,10 +642,6 @@ export default function Home() {
             `,
             backgroundSize: "60px 60px",
           }}
-          animate={{
-            opacity: [0.03, 0.06, 0.03],
-          }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
         {/* Noise texture */}
         <div
@@ -615,48 +653,74 @@ export default function Home() {
         <FloatingParticles />
       </div>
 
+      {/* CSS for breathing animations */}
+      <style jsx global>{`
+        @keyframes breathe {
+          0%, 100% { opacity: 0.7; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.02); }
+        }
+        @keyframes breathe-slow {
+          0%, 100% { opacity: 0.5; transform: scale(1); }
+          50% { opacity: 0.9; transform: scale(1.05); }
+        }
+        @keyframes orb-1 {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+          50% { transform: translate(50px, -30px) scale(1.3); opacity: 0.5; }
+        }
+        @keyframes orb-2 {
+          0%, 100% { transform: translate(0, 0) scale(1.2); opacity: 0.2; }
+          50% { transform: translate(-30px, 40px) scale(1); opacity: 0.4; }
+        }
+        @keyframes orb-3 {
+          0%, 100% { transform: scale(1); opacity: 0.2; }
+          50% { transform: scale(1.4); opacity: 0.35; }
+        }
+        @keyframes orb-4 {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.1; }
+          50% { transform: translate(-20px, 0) scale(1.2); opacity: 0.25; }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 0.8; }
+        }
+        .animate-breathe {
+          animation: breathe 8s ease-in-out infinite;
+        }
+        .animate-breathe-slow {
+          animation: breathe-slow 12s ease-in-out infinite;
+        }
+        .animate-orb-1 {
+          animation: orb-1 10s ease-in-out infinite;
+        }
+        .animate-orb-2 {
+          animation: orb-2 12s ease-in-out infinite;
+        }
+        .animate-orb-3 {
+          animation: orb-3 14s ease-in-out infinite;
+        }
+        .animate-orb-4 {
+          animation: orb-4 8s ease-in-out infinite;
+        }
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+        .animate-pulse-glow {
+          animation: pulse-glow 2s ease-in-out infinite;
+        }
+      `}</style>
+
       {/* Hero */}
       <section ref={heroRef} className="relative min-h-screen flex items-center justify-center">
-        {/* Animated background orbs - brighter with more breathing */}
+        {/* Animated background orbs - CSS for smooth breathing */}
         <div className="absolute inset-0 overflow-hidden">
-          <motion.div
-            className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-purple-500/30 rounded-full filter blur-[150px]"
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.3, 0.5, 0.3],
-              x: [0, 50, 0],
-              y: [0, -30, 0],
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-blue-500/25 rounded-full filter blur-[120px]"
-            animate={{
-              scale: [1.2, 1, 1.2],
-              opacity: [0.2, 0.4, 0.2],
-              x: [0, -30, 0],
-              y: [0, 40, 0],
-            }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute top-1/2 right-1/3 w-[400px] h-[400px] bg-pink-500/20 rounded-full filter blur-[100px]"
-            animate={{
-              scale: [1, 1.4, 1],
-              opacity: [0.2, 0.35, 0.2],
-            }}
-            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-          />
-          {/* Extra subtle cyan orb */}
-          <motion.div
-            className="absolute top-1/3 left-1/2 w-[300px] h-[300px] bg-cyan-500/15 rounded-full filter blur-[80px]"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.1, 0.25, 0.1],
-              x: [0, -20, 0],
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          />
+          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-purple-500/30 rounded-full filter blur-[150px] animate-orb-1" />
+          <div className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-blue-500/25 rounded-full filter blur-[120px] animate-orb-2" />
+          <div className="absolute top-1/2 right-1/3 w-[400px] h-[400px] bg-pink-500/20 rounded-full filter blur-[100px] animate-orb-3" />
+          <div className="absolute top-1/3 left-1/2 w-[300px] h-[300px] bg-cyan-500/15 rounded-full filter blur-[80px] animate-orb-4" />
         </div>
 
         {/* Gradient overlay - lighter */}
@@ -667,17 +731,17 @@ export default function Home() {
           className="relative z-10 mx-auto max-w-5xl px-6 text-center"
           style={{ opacity: heroOpacity, scale: heroScale }}
         >
-          {/* Title with stacking animation on first visit */}
+          {/* Title with stacking animation - click to replay */}
           <div className="mb-6">
-            {isClient && showAnimation && !animationComplete ? (
-              <StackingTitle onComplete={handleAnimationComplete} />
+            {isClient && isAnimating ? (
+              <StackingTitle key={animationKey} onComplete={handleAnimationComplete} />
             ) : (
               <motion.div
-                initial={showAnimation ? { opacity: 0 } : { opacity: 1 }}
+                initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
-                <StaticTitle />
+                <StaticTitle onClick={replayAnimation} />
               </motion.div>
             )}
           </div>
@@ -774,10 +838,11 @@ export default function Home() {
       </section>
 
       {/* The Stack */}
-      <section className="relative mx-auto max-w-5xl px-4 sm:px-6 py-20 sm:py-28">
+      <section className="relative mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
+        <FloatingAccents count={8} color="purple" />
         <FadeIn>
           <h2 className="text-3xl sm:text-4xl font-black text-white mb-2 text-center">The Stack</h2>
-          <p className="text-zinc-400 text-sm sm:text-base text-center mb-12 sm:mb-16">Tools that power the workflow</p>
+          <p className="text-zinc-400 text-sm sm:text-base text-center mb-8 sm:mb-10">Tools that power the workflow</p>
         </FadeIn>
 
         {/* All tools in a unified grid */}
@@ -801,7 +866,7 @@ export default function Home() {
         </div>
 
         {/* MCP Servers */}
-        <div className="mt-12 sm:mt-16">
+        <div className="mt-8 sm:mt-10">
           <h3 className="text-xs sm:text-sm font-medium text-zinc-400 mb-4 uppercase tracking-widest text-center">
             MCP Servers
           </h3>
@@ -825,7 +890,7 @@ export default function Home() {
       </section>
 
       {/* Hardware Network */}
-      <section className="relative mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
+      <section className="relative mx-auto max-w-5xl px-4 sm:px-6 py-10 sm:py-12">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-[300px] sm:w-[400px] h-[150px] sm:h-[200px] bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-full filter blur-[80px]" />
         </div>
@@ -877,7 +942,8 @@ export default function Home() {
       </section>
 
       {/* Quick Start */}
-      <section id="quick-start" className="relative mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24 md:py-32">
+      <section id="quick-start" className="relative mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
+        <FloatingAccents count={5} color="cyan" />
         {/* Background glow */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-[400px] sm:w-[600px] h-[250px] sm:h-[400px] bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full filter blur-[100px] sm:blur-[120px]" />
@@ -900,10 +966,10 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
       </section>
 
       {/* What's Inside */}
-      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24 md:py-32">
+      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
         <FadeIn>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 text-center">What&apos;s Inside</h2>
-          <p className="text-zinc-400 text-xs sm:text-sm text-center mb-10 sm:mb-16">Everything you need to ship with Claude Code</p>
+          <p className="text-zinc-400 text-xs sm:text-sm text-center mb-6 sm:mb-8">Everything you need to ship with Claude Code</p>
         </FadeIn>
 
         <div className="grid gap-3 sm:gap-5 grid-cols-2 lg:grid-cols-4">
@@ -944,7 +1010,8 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
       </section>
 
       {/* Philosophy */}
-      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24 md:py-32">
+      <section className="relative mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
+        <FloatingAccents count={6} color="pink" />
         <FadeIn>
           <motion.div
             className="rounded-2xl sm:rounded-3xl p-6 sm:p-10 md:p-14 bg-gradient-to-br from-purple-800/30 via-transparent to-blue-800/30 backdrop-blur-md border border-white/[0.12] relative overflow-hidden"
@@ -991,7 +1058,7 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
       </section>
 
       {/* Showcase - Leavn */}
-      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
+      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-8 sm:py-12">
         <FadeIn>
           <div className="rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 bg-white/[0.04] backdrop-blur-md border border-white/[0.1]">
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
@@ -1038,10 +1105,10 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
       </section>
 
       {/* Support */}
-      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-16 sm:py-24 md:py-32">
+      <section className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
         <FadeIn>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-2 text-center">Support the Stack</h2>
-          <p className="text-zinc-400 text-xs sm:text-sm text-center mb-8 sm:mb-12">
+          <p className="text-zinc-400 text-xs sm:text-sm text-center mb-6 sm:mb-8">
             If this helps you ship faster, consider using my affiliate links
           </p>
         </FadeIn>
