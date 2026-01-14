@@ -208,12 +208,21 @@ const infraStack = [
 ];
 
 const mcpServers = [
-  { name: "Omi", purpose: "Memory persistence" },
-  { name: "Sosumi", purpose: "Apple documentation" },
-  { name: "GitHub", purpose: "PR reviews, issues" },
-  { name: "SQLite", purpose: "Local database" },
-  { name: "Puppeteer", purpose: "Browser automation" },
-  { name: "n8n", purpose: "Workflow automation" },
+  { name: "Sosumi", purpose: "Apple docs" },
+  { name: "GitHub", purpose: "PRs & issues" },
+  { name: "Vercel", purpose: "Deploy" },
+  { name: "Supabase", purpose: "Database" },
+  { name: "n8n", purpose: "Workflows" },
+  { name: "Memory", purpose: "Knowledge graph" },
+  { name: "BRAIN", purpose: "Life data" },
+  { name: "Puppeteer", purpose: "Browser" },
+  { name: "Glif", purpose: "AI images" },
+  { name: "Xcode", purpose: "iOS builds" },
+  { name: "Calendar", purpose: "Events" },
+  { name: "Clipboard", purpose: "Copy/paste" },
+  { name: "Filesystem", purpose: "File access" },
+  { name: "Chrome", purpose: "Web automation" },
+  { name: "Omi", purpose: "Wearable memory" },
 ];
 
 function StackCard({
@@ -438,26 +447,24 @@ function FloatingParticles() {
   );
 }
 
-// Stacking animation for "sigstack" - letters fall and stack, then shuffle into place
+// Stacking animation for "sigstack" - letters fall and stack like blocks, then fan out
 function StackingTitle({ onComplete }: { onComplete: () => void }) {
   const letters = "sigstack".split("");
   const [phase, setPhase] = useState<"falling" | "stacking" | "shuffling" | "done">("falling");
 
-  // Letter positions in the final word
-  const finalPositions = letters.map((_, i) => i);
-
-  // Stacked positions (all letters pile up in center)
+  // Stacked positions - letters pile up vertically like building blocks
   const stackedPositions = letters.map((_, i) => ({
-    x: 0,
-    y: -i * 8, // Stack upward
-    rotate: (Math.random() - 0.5) * 15, // Slight random rotation
+    x: (Math.random() - 0.5) * 20, // Slight horizontal wobble
+    y: -i * 18, // Stack upward with more visible spacing
+    rotate: (Math.random() - 0.5) * 25, // More rotation for messier stack
+    scale: 1,
   }));
 
   useEffect(() => {
-    // Phase timing
-    const fallingDuration = 800;
-    const stackingDuration = 600;
-    const shufflingDuration = 800;
+    // Phase timing - give stacking more time to be visible
+    const fallingDuration = 600;
+    const stackingDuration = 800;
+    const shufflingDuration = 900;
 
     const timer1 = setTimeout(() => setPhase("stacking"), fallingDuration);
     const timer2 = setTimeout(() => setPhase("shuffling"), fallingDuration + stackingDuration);
@@ -474,8 +481,8 @@ function StackingTitle({ onComplete }: { onComplete: () => void }) {
   }, [onComplete]);
 
   return (
-    <div className="relative h-[120px] sm:h-[160px] flex items-center justify-center">
-      <div className="relative flex items-end justify-center">
+    <div className="relative h-[140px] sm:h-[180px] flex items-center justify-center overflow-visible">
+      <div className="relative flex items-end justify-center overflow-visible">
         {letters.map((letter, i) => {
           // Calculate horizontal offset for final position
           const letterWidth = 48; // Approximate width per letter
@@ -491,52 +498,56 @@ function StackingTitle({ onComplete }: { onComplete: () => void }) {
                 filter: "drop-shadow(0 4px 20px rgba(139, 92, 246, 0.4))",
               }}
               initial={{
-                y: -400 - (i * 50), // Start above viewport, staggered
-                x: finalX,
+                y: -300 - (i * 60), // Start above viewport, staggered
+                x: (Math.random() - 0.5) * 200, // Random horizontal start
                 opacity: 0,
-                rotate: Math.random() * 360,
+                rotate: Math.random() * 180 - 90,
+                scale: 0.8,
               }}
               animate={
                 phase === "falling"
                   ? {
-                      y: 100, // Fall to bottom
+                      y: 40, // Fall to landing zone
                       x: 0, // Converge to center
                       opacity: 1,
-                      rotate: 0,
+                      rotate: (Math.random() - 0.5) * 30,
+                      scale: 1,
                     }
                   : phase === "stacking"
                   ? {
-                      y: stackedPositions[letters.length - 1 - i].y, // Stack from bottom
-                      x: 0,
+                      y: stackedPositions[letters.length - 1 - i].y, // Stack from bottom up
+                      x: stackedPositions[letters.length - 1 - i].x, // Slight wobble
                       opacity: 1,
-                      rotate: stackedPositions[i].rotate,
+                      rotate: stackedPositions[letters.length - 1 - i].rotate,
+                      scale: 1,
                     }
                   : {
                       y: 0, // Final position
                       x: finalX,
                       opacity: 1,
                       rotate: 0,
+                      scale: 1,
                     }
               }
               transition={
                 phase === "falling"
                   ? {
                       type: "spring",
-                      stiffness: 100,
-                      damping: 15,
+                      stiffness: 80,
+                      damping: 20,
                       delay: i * 0.05,
                     }
                   : phase === "stacking"
                   ? {
                       type: "spring",
-                      stiffness: 200,
-                      damping: 20,
+                      stiffness: 120,
+                      damping: 25,
                       delay: i * 0.03,
                     }
                   : {
                       type: "spring",
-                      stiffness: 150,
-                      damping: 18,
+                      stiffness: 100,
+                      damping: 28,
                       delay: i * 0.04,
                     }
               }
