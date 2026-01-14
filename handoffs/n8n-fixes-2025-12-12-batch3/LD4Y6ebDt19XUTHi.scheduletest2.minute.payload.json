@@ -1,0 +1,201 @@
+{
+  "name": "Omi Daily Digest",
+  "nodes": [
+    {
+      "id": "schedule-daily",
+      "name": "Daily at 8 PM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "disabled": false,
+      "position": [
+        250,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "get-conversations",
+      "name": "Get Today Conversations",
+      "type": "n8n-nodes-base.httpRequest",
+      "disabled": false,
+      "position": [
+        470,
+        200
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3100/api/v1/omi/conversations?limit=50",
+        "options": {}
+      },
+      "typeVersion": 4.2,
+      "continueOnFail": true
+    },
+    {
+      "id": "get-memories",
+      "name": "Get Today Memories",
+      "type": "n8n-nodes-base.httpRequest",
+      "disabled": false,
+      "position": [
+        470,
+        400
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3100/api/v1/omi/memories?limit=50",
+        "options": {}
+      },
+      "typeVersion": 4.2,
+      "continueOnFail": true
+    },
+    {
+      "id": "get-stats",
+      "name": "Get Omi Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "disabled": false,
+      "position": [
+        470,
+        300
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3100/api/v1/omi/stats",
+        "options": {}
+      },
+      "typeVersion": 4.2,
+      "continueOnFail": true
+    },
+    {
+      "id": "build-digest",
+      "name": "Build Daily Digest",
+      "type": "n8n-nodes-base.code",
+      "disabled": false,
+      "position": [
+        910,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const today = new Date().toISOString().split('T')[0];\n\nconst conversationsRaw = $node['Get Today Conversations']?.json ?? [];\nconst memoriesRaw = $node['Get Today Memories']?.json ?? [];\nconst stats = $node['Get Omi Stats']?.json ?? {};\n\nconst conversations = Array.isArray(conversationsRaw)\n  ? conversationsRaw.filter(c => c.started_at && c.started_at.startsWith(today))\n  : [];\n\nconst memories = Array.isArray(memoriesRaw)\n  ? memoriesRaw.filter(m => m.created_at && m.created_at.startsWith(today))\n  : [];\n\nconst totalMinutes = conversations.reduce((sum, c) => sum + (c.duration_seconds || 0) / 60, 0);\n\nreturn [{\n  json: {\n    date: today,\n    conversation_count: conversations.length,\n    memory_count: memories.length,\n    total_recording_minutes: Math.round(totalMinutes),\n    conversations: conversations.slice(0, 10).map(c => ({\n      time: c.started_at,\n      duration: c.duration_seconds,\n      summary: c.summary,\n    })),\n    memories: memories.slice(0, 10).map(m => ({\n      content: m.content,\n      category: m.category,\n    })),\n    overall_stats: stats,\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "generate-summary",
+      "name": "AI Daily Summary",
+      "type": "n8n-nodes-base.code",
+      "disabled": false,
+      "position": [
+        1130,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Lightweight summary (no external LLM dependency)\nconst d = $input.first().json || {};\nconst date = d.date || $now.toISODate();\nconst convCount = d.conversation_count ?? 0;\nconst memCount = d.memory_count ?? 0;\nconst minutes = d.total_recording_minutes ?? 0;\n\nconst topConvo = Array.isArray(d.conversations) && d.conversations.length\n  ? (d.conversations[0].title || d.conversations[0].summary || 'one conversation')\n  : null;\n\nconst topMemory = Array.isArray(d.memories) && d.memories.length\n  ? (d.memories[0].title || d.memories[0].summary || 'one memory')\n  : null;\n\nlet text = `On ${date}, you captured ${convCount} conversation${convCount === 1 ? '' : 's'} and ${memCount} memory${memCount === 1 ? '' : 'ies'} in about ${minutes} minutes.`;\nif (topConvo) text += ` A highlight: ${topConvo}.`;\nif (topMemory) text += ` Notable memory: ${topMemory}.`;\ntext += ' (AI summary temporarily disabled.)';\n\nreturn [{ json: { text } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "save-digest",
+      "name": "Save to BRAIN",
+      "type": "n8n-nodes-base.httpRequest",
+      "disabled": false,
+      "position": [
+        1350,
+        300
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3100/api/v1/notes",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={{ ({\n  title: `Daily Omi Digest - ${$node[\"Build Daily Digest\"].json.date}` ,\n  content: $json.text,\n  tags: [\"omi\", \"daily-digest\", \"auto-generated\"],\n  source: \"n8n-omi-digest\",\n  metadata: {\n    conversations: $node[\"Build Daily Digest\"].json.conversation_count,\n    memories: $node[\"Build Daily Digest\"].json.memory_count,\n    minutes: $node[\"Build Daily Digest\"].json.total_recording_minutes,\n  },\n}) }}",
+        "sendBody": true,
+        "specifyBody": "json"
+      },
+      "typeVersion": 4.2
+    }
+  ],
+  "connections": {
+    "Daily at 8 PM": {
+      "main": [
+        [
+          {
+            "node": "Get Today Conversations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Today Conversations": {
+      "main": [
+        [
+          {
+            "node": "Get Today Memories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Today Memories": {
+      "main": [
+        [
+          {
+            "node": "Get Omi Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Omi Stats": {
+      "main": [
+        [
+          {
+            "node": "Build Daily Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Daily Digest": {
+      "main": [
+        [
+          {
+            "node": "AI Daily Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Daily Summary": {
+      "main": [
+        [
+          {
+            "node": "Save to BRAIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Daily at 8 PM": {
+      "recurrenceRules": [
+        0
+      ]
+    }
+  }
+}

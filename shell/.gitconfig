@@ -1,0 +1,24 @@
+[user]
+	name = Will Sigmon
+	email = wjsigmon@gmail.com
+[pack]
+	windowMemory = 100m
+	packSizeLimit = 100m
+	threads = 1
+	deltaCacheSize = 512m
+[core]
+	excludesfile = ~/.gitignore_global
+[init]
+	defaultBranch = main
+[coderabbit]
+	machineId = cli/6bb32fb5cbe54619836908ae430dd25d
+
+# MCP Git Server available: git-mcp-server
+# Package: @cyanheads/git-mcp-server@2.3.2
+[maintenance]
+	repo = /Users/wsig/GitHub Builds/LeavnOfficial
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

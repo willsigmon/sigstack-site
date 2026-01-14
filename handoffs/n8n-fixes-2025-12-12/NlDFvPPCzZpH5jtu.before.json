@@ -1,0 +1,273 @@
+[
+  {
+    "updatedAt": "2025-12-12T11:21:42.932Z",
+    "createdAt": "2025-12-09T16:05:37.463Z",
+    "id": "NlDFvPPCzZpH5jtu",
+    "name": "Omi Home Assistant Triggers",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "id": "webhook-realtime",
+        "name": "Omi Realtime Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "disabled": false,
+        "position": [
+          250,
+          300
+        ],
+        "webhookId": "omi-realtime-ha",
+        "parameters": {
+          "path": "omi-realtime",
+          "options": {},
+          "httpMethod": "POST",
+          "responseMode": "lastNode"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "detect-triggers",
+        "name": "Detect Voice Triggers",
+        "type": "n8n-nodes-base.code",
+        "disabled": false,
+        "position": [
+          470,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const payload = $input.first().json.body;\nconst transcript = payload.transcript || \n  (payload.segments || []).map(s => s.text).join(\" \");\n\n// Enhanced trigger phrases with natural language variations\nconst triggers = [\n  // SCENES - with many natural variations\n  { phrases: [\"movie time\", \"watch a movie\", \"movie mode\", \"watching something\", \"netflix time\", \"tv time\"], action: \"scene.turn_on\", entity: \"scene.movie_time\" },\n  { phrases: [\"good night\", \"goodnight\", \"going to bed\", \"heading to bed\", \"bedtime\", \"time for bed\", \"night night\"], action: \"scene.turn_on\", entity: \"scene.good_night\" },\n  { phrases: [\"good morning\", \"wake up\", \"im up\", \"morning time\", \"rise and shine\"], action: \"scene.turn_on\", entity: \"scene.good_morning\" },\n  { phrases: [\"romantic\", \"date night\", \"romantic mode\", \"set the mood\"], action: \"scene.turn_on\", entity: \"scene.romantic\" },\n  { phrases: [\"party mode\", \"party time\", \"lets party\", \"having people over\"], action: \"scene.turn_on\", entity: \"scene.party\" },\n  { phrases: [\"work mode\", \"time to work\", \"working from home\", \"start work\", \"office mode\"], action: \"scene.turn_on\", entity: \"scene.work_mode\" },\n  { phrases: [\"relax mode\", \"time to relax\", \"chill mode\", \"chilling\", \"relaxing\"], action: \"scene.turn_on\", entity: \"scene.relax\" },\n  { phrases: [\"bright mode\", \"full brightness\", \"all the lights\", \"turn everything on\"], action: \"scene.turn_on\", entity: \"scene.bright\" },\n  { phrases: [\"all off\", \"everything off\", \"lights out\", \"kill the lights\", \"turn off everything\"], action: \"scene.turn_on\", entity: \"scene.all_off\" },\n  { phrases: [\"leaving\", \"heading out\", \"going out\", \"away mode\", \"leaving the house\"], action: \"scene.turn_on\", entity: \"scene.away\" },\n  \n  // ROOM-SPECIFIC LIGHTS\n  { phrases: [\"living room on\", \"turn on living room\", \"living room lights\"], action: \"light.turn_on\", entity: \"light.living_room\" },\n  { phrases: [\"living room off\", \"turn off living room\"], action: \"light.turn_off\", entity: \"light.living_room\" },\n  { phrases: [\"kitchen on\", \"turn on kitchen\", \"kitchen lights\"], action: \"light.turn_on\", entity: \"light.kitchen\" },\n  { phrases: [\"kitchen off\", \"turn off kitchen\"], action: \"light.turn_off\", entity: \"light.kitchen\" },\n  { phrases: [\"bedroom on\", \"turn on bedroom\", \"bedroom lights\"], action: \"light.turn_on\", entity: \"light.bedroom\" },\n  { phrases: [\"bedroom off\", \"turn off bedroom\"], action: \"light.turn_off\", entity: \"light.bedroom\" },\n  { phrases: [\"office on\", \"turn on office\", \"office lights\"], action: \"light.turn_on\", entity: \"light.office\" },\n  { phrases: [\"office off\", \"turn off office\"], action: \"light.turn_off\", entity: \"light.office\" },\n  { phrases: [\"hallway on\", \"turn on hallway\", \"hall lights\"], action: \"light.turn_on\", entity: \"light.hallway\" },\n  { phrases: [\"hallway off\", \"turn off hallway\"], action: \"light.turn_off\", entity: \"light.hallway\" },\n  { phrases: [\"bathroom on\", \"turn on bathroom\", \"bathroom lights\"], action: \"light.turn_on\", entity: \"light.bathroom\" },\n  { phrases: [\"bathroom off\", \"turn off bathroom\"], action: \"light.turn_off\", entity: \"light.bathroom\" },\n  { phrases: [\"porch on\", \"turn on porch\", \"outside lights\", \"porch lights\"], action: \"light.turn_on\", entity: \"light.outside\" },\n  { phrases: [\"porch off\", \"turn off porch\", \"outside off\"], action: \"light.turn_off\", entity: \"light.outside\" },\n  \n  // GENERAL LIGHTS\n  { phrases: [\"turn on the lights\", \"lights on\", \"turn the lights on\"], action: \"light.turn_on\", entity: \"light.living_room\" },\n  { phrases: [\"turn off the lights\", \"lights off\", \"turn the lights off\"], action: \"light.turn_off\", entity: \"light.living_room\" },\n  \n  // MEDIA CONTROLS\n  { phrases: [\"pause\", \"pause it\", \"stop playing\"], action: \"media_player.media_pause\", entity: \"media_player.spotify_will_sigmon\" },\n  { phrases: [\"play\", \"resume\", \"continue playing\", \"keep playing\"], action: \"media_player.media_play\", entity: \"media_player.spotify_will_sigmon\" },\n  { phrases: [\"next song\", \"skip\", \"next track\", \"skip this\"], action: \"media_player.media_next_track\", entity: \"media_player.spotify_will_sigmon\" },\n  { phrases: [\"previous song\", \"go back\", \"last song\"], action: \"media_player.media_previous_track\", entity: \"media_player.spotify_will_sigmon\" },\n  \n  // SECURITY\n  { phrases: [\"arm the alarm\", \"security on\", \"arm abode\", \"set the alarm\"], action: \"alarm_control_panel.alarm_arm_away\", entity: \"alarm_control_panel.abode_alarm\" },\n  { phrases: [\"disarm the alarm\", \"security off\", \"disarm abode\", \"turn off alarm\"], action: \"alarm_control_panel.alarm_disarm\", entity: \"alarm_control_panel.abode_alarm\" },\n  \n  // NANOLEAF\n  { phrases: [\"nanoleaf on\", \"turn on nanoleaf\", \"shapes on\"], action: \"light.turn_on\", entity: \"light.nanoleaf\" },\n  { phrases: [\"nanoleaf off\", \"turn off nanoleaf\", \"shapes off\"], action: \"light.turn_off\", entity: \"light.nanoleaf\" }\n];\n\nconst lowerTranscript = transcript.toLowerCase();\n\n// Find matches\nconst matched = [];\nfor (const trigger of triggers) {\n  for (const phrase of trigger.phrases) {\n    if (lowerTranscript.includes(phrase)) {\n      matched.push({\n        json: {\n          action: trigger.action,\n          entity: trigger.entity,\n          transcript: transcript,\n          matched_phrase: phrase\n        }\n      });\n      break; // Only match once per trigger group\n    }\n  }\n}\n\nreturn matched.length > 0 ? matched : [{ json: { action: \"none\", transcript } }];"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "filter-matches",
+        "name": "Has Trigger?",
+        "type": "n8n-nodes-base.if",
+        "disabled": false,
+        "position": [
+          690,
+          300
+        ],
+        "parameters": {
+          "options": {},
+          "conditions": {
+            "options": {
+              "leftValue": "",
+              "caseSensitive": true,
+              "typeValidation": "strict"
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "has-action",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                },
+                "leftValue": "={{ $json.action }}",
+                "rightValue": "none"
+              }
+            ]
+          }
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "call-ha",
+        "name": "Call Home Assistant",
+        "type": "n8n-nodes-base.httpRequest",
+        "disabled": false,
+        "position": [
+          910,
+          200
+        ],
+        "parameters": {
+          "url": "=http://192.168.1.139:8124/api/services/{{ $json.action.split(\".\")[0] }}/{{ $json.action.split(\".\")[1] }}",
+          "method": "POST",
+          "options": {},
+          "jsonBody": "={\"entity_id\": \"{{ $json.entity }}\"}",
+          "sendBody": true,
+          "sendHeaders": true,
+          "specifyBody": "json",
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkYzZiNTIzY2QwYTI0NWIyODI2ZGFiMjU2NzgyYTEyMCIsImlhdCI6MTc2NTMwOTM1MSwiZXhwIjoyMDgwNjY5MzUxfQ.ye4OEDsMGw34tLewmFLo6KTzDBbk1Q2wzLleubsh1lw"
+              }
+            ]
+          }
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "log-trigger",
+        "name": "Log to BRAIN",
+        "type": "n8n-nodes-base.httpRequest",
+        "disabled": false,
+        "position": [
+          1130,
+          200
+        ],
+        "parameters": {
+          "url": "http://wsiglog:3100/api/v1/conversations",
+          "method": "POST",
+          "options": {},
+          "jsonBody": "={\n  \"source\": \"omi-ha-trigger\",\n  \"content\": \"Voice command: {{ $json.matched_phrase }}\",\n  \"summary\": \"{{ $json.action }} on {{ $json.entity }}\",\n  \"tags\": [\"omi\", \"home-assistant\", \"voice\"],\n  \"metadata\": {\n    \"action\": \"{{ $json.action }}\",\n    \"entity\": \"{{ $json.entity }}\"\n  }\n}",
+          "sendBody": true,
+          "sendHeaders": true,
+          "specifyBody": "json",
+          "headerParameters": {
+            "parameters": []
+          }
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "respond-triggered",
+        "name": "Respond Triggered",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "disabled": false,
+        "position": [
+          1350,
+          200
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {\"triggered\": true, \"action\": $json.action, \"entity\": $json.entity} }}"
+        },
+        "typeVersion": 1.1
+      },
+      {
+        "id": "respond-no-match",
+        "name": "Respond No Match",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "disabled": false,
+        "position": [
+          910,
+          400
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={\"triggered\": false}"
+        },
+        "typeVersion": 1.1
+      }
+    ],
+    "connections": {
+      "Has Trigger?": {
+        "main": [
+          [
+            {
+              "node": "Call Home Assistant",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond No Match",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Log to BRAIN": {
+        "main": [
+          [
+            {
+              "node": "Respond Triggered",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call Home Assistant": {
+        "main": [
+          [
+            {
+              "node": "Log to BRAIN",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Omi Realtime Webhook": {
+        "main": [
+          [
+            {
+              "node": "Detect Voice Triggers",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Detect Voice Triggers": {
+        "main": [
+          [
+            {
+              "node": "Has Trigger?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false
+    },
+    "staticData": null,
+    "meta": null,
+    "pinData": null,
+    "versionId": "49f1e91f-1fbd-4c1b-91aa-e4f7d44786aa",
+    "activeVersionId": "49f1e91f-1fbd-4c1b-91aa-e4f7d44786aa",
+    "versionCounter": 77,
+    "triggerCount": 1,
+    "tags": [
+      {
+        "updatedAt": "2025-12-09T16:05:13.591Z",
+        "createdAt": "2025-12-09T16:05:13.591Z",
+        "id": "Fjd68TuVzw0cUNIp",
+        "name": "omi"
+      },
+      {
+        "updatedAt": "2025-12-09T16:05:37.463Z",
+        "createdAt": "2025-12-09T16:05:37.463Z",
+        "id": "IV6dWXr1eSBcvUDS",
+        "name": "home-assistant"
+      },
+      {
+        "updatedAt": "2025-12-09T16:05:37.463Z",
+        "createdAt": "2025-12-09T16:05:37.463Z",
+        "id": "pYaDXq1sqWI93fH0",
+        "name": "voice"
+      }
+    ],
+    "shared": [
+      {
+        "updatedAt": "2025-12-09T16:05:37.463Z",
+        "createdAt": "2025-12-09T16:05:37.463Z",
+        "role": "workflow:owner",
+        "workflowId": "NlDFvPPCzZpH5jtu",
+        "projectId": "MNkFznuFO8b8N585",
+        "project": {
+          "updatedAt": "2025-12-02T22:38:20.973Z",
+          "createdAt": "2025-12-02T20:47:48.956Z",
+          "id": "MNkFznuFO8b8N585",
+          "name": "Will Sigmon <wjsigmon@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null
+        }
+      }
+    ]
+  }
+]

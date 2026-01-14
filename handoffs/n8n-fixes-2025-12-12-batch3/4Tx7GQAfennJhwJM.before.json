@@ -1,0 +1,333 @@
+{
+  "updatedAt": "2025-12-12T13:12:45.253Z",
+  "createdAt": "2025-12-07T07:55:56.101Z",
+  "id": "4Tx7GQAfennJhwJM",
+  "name": "Immich - Family Album Auto-Share",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "schedule",
+      "name": "Twice Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        100,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 12
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "get-albums",
+      "name": "Get All Albums",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        300,
+        300
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:2283/api/albums",
+        "method": "GET",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "typeVersion": 4,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0uKJ5h4uJiUpU1j5",
+          "name": "Immich API"
+        }
+      }
+    },
+    {
+      "id": "filter-shareable",
+      "name": "Find Albums to Share",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        500,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const albums = $input.first().json || [];\nconst familyPatterns = ['Sadie', 'Callie', 'Birthday', 'Christmas', 'Easter', 'Family', 'Kids', 'Gymnastics'];\nconst cassieUserId = 'CASSIE_USER_ID_HERE';\nconst toShare = albums.filter(album => {\n  const name = album.albumName || '';\n  const isMatch = familyPatterns.some(p => name.includes(p));\n  const alreadyShared = album.sharedUsers?.some(u => u.id === cassieUserId);\n  return isMatch && !alreadyShared;\n});\nreturn toShare.map(a => ({ json: { albumId: a.id, albumName: a.albumName, shareWith: cassieUserId } }));"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "share-album",
+      "name": "Share Album",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        700,
+        300
+      ],
+      "parameters": {
+        "url": "={{ 'http://192.168.1.139:2283/api/albums/' + $json.albumId + '/users' }}",
+        "method": "PUT",
+        "jsonBody": "={{ { \"sharedUserIds\": [$json.shareWith] } }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "typeVersion": 4,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0uKJ5h4uJiUpU1j5",
+          "name": "Immich API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Twice Daily": {
+      "main": [
+        [
+          {
+            "node": "Get All Albums",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Albums": {
+      "main": [
+        [
+          {
+            "node": "Find Albums to Share",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Albums to Share": {
+      "main": [
+        [
+          {
+            "node": "Share Album",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Twice Daily": {
+      "recurrenceRules": [
+        12
+      ]
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "versionId": "2e8b6d1e-0fb6-4a0c-8daf-c0cd566e8fa6",
+  "activeVersionId": "2e8b6d1e-0fb6-4a0c-8daf-c0cd566e8fa6",
+  "versionCounter": 101,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-07T07:55:56.101Z",
+      "createdAt": "2025-12-07T07:55:56.101Z",
+      "role": "workflow:owner",
+      "workflowId": "4Tx7GQAfennJhwJM",
+      "projectId": "MNkFznuFO8b8N585",
+      "project": {
+        "updatedAt": "2025-12-02T22:38:20.973Z",
+        "createdAt": "2025-12-02T20:47:48.956Z",
+        "id": "MNkFznuFO8b8N585",
+        "name": "Will Sigmon <wjsigmon@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-02T20:47:48.956Z",
+            "createdAt": "2025-12-02T20:47:48.956Z",
+            "userId": "9078fa56-adda-4039-a803-770525ee1139",
+            "projectId": "MNkFznuFO8b8N585",
+            "user": {
+              "updatedAt": "2025-12-12T17:31:38.271Z",
+              "createdAt": "2025-12-02T20:47:47.777Z",
+              "id": "9078fa56-adda-4039-a803-770525ee1139",
+              "email": "wjsigmon@gmail.com",
+              "firstName": "Will",
+              "lastName": "Sigmon",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-02T22:38:24.407Z",
+                "personalization_survey_n8n_version": "1.122.4"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "lQ4cSakXgWIh08Iw",
+                "userActivatedAt": 1764759620031,
+                "easyAIWorkflowOnboarded": true,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1765210322440
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-12-12",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2025-12-12T13:12:45.254Z",
+    "createdAt": "2025-12-12T13:12:45.254Z",
+    "versionId": "2e8b6d1e-0fb6-4a0c-8daf-c0cd566e8fa6",
+    "workflowId": "4Tx7GQAfennJhwJM",
+    "nodes": [
+      {
+        "id": "schedule",
+        "name": "Twice Daily",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "position": [
+          100,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 12
+              }
+            ]
+          }
+        },
+        "typeVersion": 1
+      },
+      {
+        "id": "get-albums",
+        "name": "Get All Albums",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          300,
+          300
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:2283/api/albums",
+          "method": "GET",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth"
+        },
+        "typeVersion": 4,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "0uKJ5h4uJiUpU1j5",
+            "name": "Immich API"
+          }
+        }
+      },
+      {
+        "id": "filter-shareable",
+        "name": "Find Albums to Share",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          500,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const albums = $input.first().json || [];\nconst familyPatterns = ['Sadie', 'Callie', 'Birthday', 'Christmas', 'Easter', 'Family', 'Kids', 'Gymnastics'];\nconst cassieUserId = 'CASSIE_USER_ID_HERE';\nconst toShare = albums.filter(album => {\n  const name = album.albumName || '';\n  const isMatch = familyPatterns.some(p => name.includes(p));\n  const alreadyShared = album.sharedUsers?.some(u => u.id === cassieUserId);\n  return isMatch && !alreadyShared;\n});\nreturn toShare.map(a => ({ json: { albumId: a.id, albumName: a.albumName, shareWith: cassieUserId } }));"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "share-album",
+        "name": "Share Album",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          700,
+          300
+        ],
+        "parameters": {
+          "url": "={{ 'http://192.168.1.139:2283/api/albums/' + $json.albumId + '/users' }}",
+          "method": "PUT",
+          "jsonBody": "={{ { \"sharedUserIds\": [$json.shareWith] } }}",
+          "sendBody": true,
+          "specifyBody": "json",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth"
+        },
+        "typeVersion": 4,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "0uKJ5h4uJiUpU1j5",
+            "name": "Immich API"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Twice Daily": {
+        "main": [
+          [
+            {
+              "node": "Get All Albums",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get All Albums": {
+        "main": [
+          [
+            {
+              "node": "Find Albums to Share",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Albums to Share": {
+        "main": [
+          [
+            {
+              "node": "Share Album",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Will Sigmon",
+    "name": null,
+    "description": null,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2025-12-12T13:12:45.340Z",
+        "id": 204,
+        "workflowId": "4Tx7GQAfennJhwJM",
+        "versionId": "2e8b6d1e-0fb6-4a0c-8daf-c0cd566e8fa6",
+        "event": "activated",
+        "userId": "9078fa56-adda-4039-a803-770525ee1139"
+      }
+    ]
+  }
+}

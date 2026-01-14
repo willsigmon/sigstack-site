@@ -1,0 +1,179 @@
+{
+  "name": "BRAIN Serendipity Nudge (New People Radar)",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        }
+      },
+      "name": "Every 5 Minutes",
+      "type": "n8n-nodes-base.cron",
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = this.getWorkflowStaticData('global');\n// lastSeen is ISO timestamp of last processed convo\nconst lastSeen = data.lastSeen || new Date(Date.now() - 15 * 60 * 1000).toISOString();\nreturn [{ json: { lastSeen } }];"
+      },
+      "name": "Load Last Seen",
+      "type": "n8n-nodes-base.function",
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'http://wsiglog-node-api:3100/conversations?since=' + encodeURIComponent($json.lastSeen) + '&limit=50' }}",
+        "options": {}
+      },
+      "name": "Fetch Recent Conversations",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const convos = items[0].json || [];\nconst data = this.getWorkflowStaticData('global');\nconst knownSelf = new Set(['Will', 'William', 'Will Sigmon', 'Cassie', 'Cassie Sigmon']);\nlet newest = data.lastSeen || null;\nconst out = [];\n\nfor (const c of convos) {\n  const started = c.started_at || c.created_at;\n  if (started && (!newest || started > newest)) newest = started;\n\n  let participants = [];\n  try {\n    participants = c.participants ? JSON.parse(c.participants) : [];\n  } catch { participants = []; }\n\n  const others = participants.filter(p => p && !knownSelf.has(p));\n  if (!others.length) continue;\n\n  out.push({ json: { convo: c, others } });\n}\n\ndata.lastSeen = newest || data.lastSeen;\nreturn out;"
+      },
+      "name": "Extract Other Speakers",
+      "type": "n8n-nodes-base.function",
+      "position": [880, 300]
+    },
+    {
+      "parameters": {
+        "mode": "multiplex",
+        "fieldsToSplitBy": "others"
+      },
+      "name": "Split Speakers",
+      "type": "n8n-nodes-base.itemLists",
+      "position": [1100, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'http://wsiglog-node-api:3100/people?q=' + encodeURIComponent($json.others) + '&limit=1' }}",
+        "options": {}
+      },
+      "name": "Check If Known Person",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1320, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "leftValue": "={{ Array.isArray($json) ? $json.length : 0 }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "equals" }
+            }
+          ]
+        }
+      },
+      "name": "Is New Person?",
+      "type": "n8n-nodes-base.if",
+      "position": [1540, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.search.brave.com/res/v1/web/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.others + ' LinkedIn Raleigh NC' }}"
+            },
+            {
+              "name": "count",
+              "value": "5"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType"
+      },
+      "name": "Brave Search (Public Web)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1760, 220],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "brave-search",
+          "name": "Brave Search API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "brain:latest",
+        "baseUrl": "http://ollama:11434",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are BRAIN, Will’s serendipity engine. Given a fresh conversation + web search snippets, write a short nudge about who the person is, why they matter, and 1–2 concrete HTI or networking follow-ups. Be concise, friendly, high-signal. Avoid guessing; if uncertain, say so."
+            },
+            {
+              "role": "user",
+              "content": "={{ 'Conversation title: ' + ($json.convo.title || '') + '\\nSummary: ' + ($json.convo.summary || '') + '\\nTranscript excerpt: ' + (($json.convo.transcript || '').slice(0,1500)) + '\\n\\nPerson name: ' + $json.others + '\\nWeb snippets (Brave): ' + JSON.stringify($json.results || $json, null, 2) }}"
+            }
+          ]
+        },
+        "options": { "temperature": 0.4, "maxTokens": 450 }
+      },
+      "name": "Ollama Serendipity Nudge",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "position": [1980, 220],
+      "credentials": {
+        "ollamaApi": { "id": "ollama-tower", "name": "Ollama Tower" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ntfy:80/brain-nudges",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { title: 'New person spotted: ' + $json.others, message: $json.message?.content || $json.text || '' } }}",
+        "options": {}
+      },
+      "name": "Send Phone Nudge (ntfy)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [2200, 220]
+    },
+    {
+      "parameters": {
+        "functionCode": "const data = this.getWorkflowStaticData('global');\n// Persist lastSeen already updated in Extract Other Speakers\nreturn items;"
+      },
+      "name": "Persist State",
+      "type": "n8n-nodes-base.function",
+      "position": [2420, 300]
+    }
+  ],
+  "connections": {
+    "Every 5 Minutes": { "main": [[{ "node": "Load Last Seen", "type": "main", "index": 0 }]] },
+    "Load Last Seen": { "main": [[{ "node": "Fetch Recent Conversations", "type": "main", "index": 0 }]] },
+    "Fetch Recent Conversations": { "main": [[{ "node": "Extract Other Speakers", "type": "main", "index": 0 }]] },
+    "Extract Other Speakers": { "main": [[{ "node": "Split Speakers", "type": "main", "index": 0 }]] },
+    "Split Speakers": { "main": [[{ "node": "Check If Known Person", "type": "main", "index": 0 }]] },
+    "Check If Known Person": { "main": [[{ "node": "Is New Person?", "type": "main", "index": 0 }]] },
+    "Is New Person?": {
+      "main": [
+        [
+          { "node": "Brave Search (Public Web)", "type": "main", "index": 0 }
+        ],
+        []
+      ]
+    },
+    "Brave Search (Public Web)": { "main": [[{ "node": "Ollama Serendipity Nudge", "type": "main", "index": 0 }]] },
+    "Ollama Serendipity Nudge": { "main": [[{ "node": "Send Phone Nudge (ntfy)", "type": "main", "index": 0 }]] },
+    "Send Phone Nudge (ntfy)": { "main": [[{ "node": "Persist State", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

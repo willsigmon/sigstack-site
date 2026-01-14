@@ -1,0 +1,248 @@
+{
+  "name": "Build & Deploy Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "build-status",
+        "options": {}
+      },
+      "name": "Build Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        250,
+        300
+      ],
+      "webhookId": "build-hook",
+      "id": "884a7d04-38d8-40c3-aa28-59df57cbc981",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "={{ \"http://192.168.1.139:3102/synthesize/\" + $now.format(\"YYYY-MM-DD\") }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "name": "Get Life Context",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        450,
+        300
+      ],
+      "id": "c7d6a010-2c59-4040-819d-984e1914b8d4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhook = $('Build Webhook').first().json;\nconst context = $input.first().json;\nreturn [{json: {...webhook, lifeContext: context}}];"
+      },
+      "name": "Merge Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        650,
+        300
+      ],
+      "id": "0a7d4158-ad0c-423e-bc54-eaea3ffb1dc6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.status }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "name": "Build Success?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        850,
+        300
+      ],
+      "id": "a078f4c2-cbdd-4ad2-b45b-76cf27430cab",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://connect.craft.do/links/HquFFKSHGEn/api/v1/blocks",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ markdown: '## ✅ Build Successful\\n\\n**Project**: ' + ($json.body.project || 'Leavn') + '\\n**Version**: ' + ($json.body.version || 'N/A') + '\\n**Duration**: ' + ($json.body.duration || 'N/A') + '\\n**Commit**: ' + ($json.body.commit || 'N/A') + '\\n\\n---', position: { position: 'start', pageId: '5ae59b55-1423-4a6b-8665-64a1dd9fb3a1' } }) }}"
+      },
+      "name": "Craft Success Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1100,
+        200
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nJMFTi5wTzZDRg1h",
+          "name": "Header Auth account"
+        }
+      },
+      "id": "a818cdb1-de49-4921-add5-ad00360733f0"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://connect.craft.do/links/HquFFKSHGEn/api/v1/blocks",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ markdown: '## ❌ Build Failed\\n\\n**Project**: ' + ($json.body.project || 'Leavn') + '\\n**Error**: ' + ($json.body.error || 'Unknown') + '\\n**Commit**: ' + ($json.body.commit || 'N/A') + '\\n**Logs**: ' + ($json.body.log_url || 'N/A') + '\\n\\n---', position: { position: 'start', pageId: '5ae59b55-1423-4a6b-8665-64a1dd9fb3a1' } }) }}"
+      },
+      "name": "Craft Failure Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1100,
+        400
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nJMFTi5wTzZDRg1h",
+          "name": "Header Auth account"
+        }
+      },
+      "id": "baa83f2a-8b76-4661-bc41-6072bb5736b1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/build_logs",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ project: $json.body.project, version: $json.body.version, status: $json.body.status, error: $json.body.error, commit: $json.body.commit, duration: $json.body.duration, life_context: $json.lifeContext, created_at: $now.toISO() }) }}"
+      },
+      "name": "Log to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1350,
+        300
+      ],
+      "id": "211d9f5a-16da-465f-9cf7-839e282a6a4e",
+      "typeVersion": 4.2
+    }
+  ],
+  "connections": {
+    "Build Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Life Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Life Context": {
+      "main": [
+        [
+          {
+            "node": "Merge Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Context": {
+      "main": [
+        [
+          {
+            "node": "Build Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Success?": {
+      "main": [
+        [
+          {
+            "node": "Craft Success Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Craft Failure Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Craft Success Alert": {
+      "main": [
+        [
+          {
+            "node": "Log to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Craft Failure Alert": {
+      "main": [
+        [
+          {
+            "node": "Log to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null
+}

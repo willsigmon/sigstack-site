@@ -1,0 +1,174 @@
+Puppeteer node: Container detected via .dockerenv file
+[
+  {
+    "updatedAt": "2025-12-12T12:44:29.981Z",
+    "createdAt": "2025-12-10T20:44:41.117Z",
+    "id": "PizxkyL3AdIlomrj",
+    "name": "BRAIN Device Context from HA",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "id": "schedule",
+        "name": "Every 15 min",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "position": [
+          200,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 15
+              }
+            ]
+          }
+        },
+        "typeVersion": 1.2
+      },
+      {
+        "id": "fetch_ha",
+        "name": "Get HA Sensors",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          420,
+          300
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:8124/api/states",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkYzZiNTIzY2QwYTI0NWIyODI2ZGFiMjU2NzgyYTEyMCIsImlhdCI6MTc2NTMwOTM1MSwiZXhwIjoyMDgwNjY5MzUxfQ.ye4OEDsMGw34tLewmFLo6KTzDBbk1Q2wzLleubsh1lw"
+              }
+            ]
+          }
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "extract",
+        "name": "Extract Context",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          640,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const first = $input.first().json;\nconst states = Array.isArray(first)\n  ? first\n  : $input.all().map((i) => i.json);\n\nconst find = (id) => {\n  const s = states.find((s) => s.entity_id === id);\n  return s ? s.state : null;\n};\n\nreturn [{\n  json: {\n    activity: find('sensor.wills_iphone_16_pro_max_activity'),\n    battery_phone: parseInt(find('sensor.wills_iphone_16_pro_max_battery_level')) || null,\n    battery_watch: parseInt(find('sensor.wills_iphone_16_pro_max_watch_battery_level')) || null,\n    geocoded_location: find('sensor.wills_iphone_16_pro_max_geocoded_location'),\n    ssid: find('sensor.wills_iphone_16_pro_max_ssid'),\n    connection_type: find('sensor.wills_iphone_16_pro_max_connection_type'),\n  },\n}];\n"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "store",
+        "name": "Store Context",
+        "type": "n8n-nodes-base.postgres",
+        "position": [
+          860,
+          300
+        ],
+        "parameters": {
+          "table": {
+            "__rl": true,
+            "mode": "list",
+            "value": "device_context"
+          },
+          "columns": {
+            "value": {
+              "ssid": "={{ $json.ssid }}",
+              "activity": "={{ $json.activity }}",
+              "battery_phone": "={{ $json.battery_phone }}",
+              "battery_watch": "={{ $json.battery_watch }}",
+              "connection_type": "={{ $json.connection_type }}",
+              "geocoded_location": "={{ $json.geocoded_location }}"
+            },
+            "mappingMode": "defineBelow"
+          },
+          "operation": "insert"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "xdu7fsxoP9U4aQBA",
+            "name": "PostgreSQL wsiglog"
+          }
+        },
+        "typeVersion": 2.5
+      }
+    ],
+    "connections": {
+      "Every 15 min": {
+        "main": [
+          [
+            {
+              "node": "Get HA Sensors",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get HA Sensors": {
+        "main": [
+          [
+            {
+              "node": "Extract Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Context": {
+        "main": [
+          [
+            {
+              "node": "Store Context",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false
+    },
+    "staticData": {
+      "node:Every 15 min": {
+        "recurrenceRules": []
+      }
+    },
+    "meta": null,
+    "pinData": null,
+    "versionId": "a86c57e7-a2b6-47c8-be28-3a42196792da",
+    "activeVersionId": "a86c57e7-a2b6-47c8-be28-3a42196792da",
+    "versionCounter": 40,
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2025-12-10T20:44:41.117Z",
+        "createdAt": "2025-12-10T20:44:41.117Z",
+        "role": "workflow:owner",
+        "workflowId": "PizxkyL3AdIlomrj",
+        "projectId": "MNkFznuFO8b8N585",
+        "project": {
+          "updatedAt": "2025-12-02T22:38:20.973Z",
+          "createdAt": "2025-12-02T20:47:48.956Z",
+          "id": "MNkFznuFO8b8N585",
+          "name": "Will Sigmon <wjsigmon@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,605 @@
+{
+  "updatedAt": "2025-12-12T19:03:09.524Z",
+  "createdAt": "2025-12-09T16:05:26.782Z",
+  "id": "9qP1nhQMcqLTAetR",
+  "name": "Omi Conversation Processor",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "webhook-conv",
+      "name": "Omi Conversation Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "disabled": false,
+      "position": [
+        250,
+        300
+      ],
+      "webhookId": "omi-conversation",
+      "parameters": {
+        "path": "omi-conversation",
+        "options": {},
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "typeVersion": 2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "store-conv",
+      "name": "Store Conversation",
+      "type": "n8n-nodes-base.httpRequest",
+      "disabled": false,
+      "position": [
+        470,
+        300
+      ],
+      "parameters": {
+        "url": "http://wsiglog:3100/api/v1/omi/webhook/conversation",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "sendBody": true,
+        "specifyBody": "json"
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "analyze-conv",
+      "name": "AI Analysis",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "disabled": false,
+      "position": [
+        690,
+        300
+      ],
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "temperature": 0.3
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Analyze this conversation transcript and extract:\n1. Key topics discussed\n2. Action items mentioned\n3. People mentioned\n4. Sentiment (positive/negative/neutral)\n5. A 2-sentence summary\n\nTranscript:\n{{ $('Omi Conversation Webhook').item.json.body.transcript }}\n\nRespond in JSON format with keys: topics, action_items, people, sentiment, summary"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "78Hk3U0UVtw5EYmz",
+          "name": "OpenAI API"
+        }
+      },
+      "typeVersion": 1.4
+    },
+    {
+      "id": "parse-analysis",
+      "name": "Parse Analysis",
+      "type": "n8n-nodes-base.code",
+      "disabled": false,
+      "position": [
+        910,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const analysis = JSON.parse($input.first().json.text || '{}');\nconst conv = $('Omi Conversation Webhook').first().json.body;\n\nreturn [{\n  json: {\n    conversation_id: $('Store Conversation').first().json.id,\n    omi_id: conv.id,\n    analysis: analysis,\n    has_action_items: (analysis.action_items || []).length > 0,\n    people_mentioned: analysis.people || [],\n    duration: conv.duration_seconds\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "check-actions",
+      "name": "Has Action Items?",
+      "type": "n8n-nodes-base.if",
+      "disabled": false,
+      "position": [
+        1130,
+        300
+      ],
+      "parameters": {
+        "options": {},
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "has-actions",
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.has_action_items }}",
+              "rightValue": true
+            }
+          ]
+        }
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "log-actions",
+      "name": "Log Action Items",
+      "type": "n8n-nodes-base.googleSheets",
+      "disabled": true,
+      "position": [
+        1350,
+        200
+      ],
+      "parameters": {
+        "columns": {
+          "value": {
+            "Date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+            "People": "={{ $json.people_mentioned.join(', ') }}",
+            "Action Item": "={{ $json.analysis.action_items.join('; ') }}",
+            "From Conversation": "={{ $json.omi_id }}"
+          },
+          "mappingMode": "defineBelow"
+        },
+        "options": {},
+        "operation": "append",
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        }
+      },
+      "typeVersion": 4.4
+    },
+    {
+      "id": "respond-processed",
+      "name": "Respond Processed",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "disabled": false,
+      "position": [
+        1350,
+        400
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\"status\": \"processed\", \"conversation_id\": $json.conversation_id, \"analysis\": $json.analysis} }}"
+      },
+      "typeVersion": 1.1
+    }
+  ],
+  "connections": {
+    "Omi Conversation Webhook": {
+      "main": [
+        [
+          {
+            "node": "Store Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Conversation": {
+      "main": [
+        [
+          {
+            "node": "AI Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Analysis": {
+      "main": [
+        [
+          {
+            "node": "Parse Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Analysis": {
+      "main": [
+        [
+          {
+            "node": "Has Action Items?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Action Items?": {
+      "main": [
+        [
+          {
+            "node": "Log Action Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Action Items": {
+      "main": [
+        [
+          {
+            "node": "Respond Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "1c516e93-49c0-4bab-9047-4256de2f21f7",
+  "activeVersionId": "1c516e93-49c0-4bab-9047-4256de2f21f7",
+  "versionCounter": 77,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-09T16:05:26.782Z",
+      "createdAt": "2025-12-09T16:05:26.782Z",
+      "role": "workflow:owner",
+      "workflowId": "9qP1nhQMcqLTAetR",
+      "projectId": "MNkFznuFO8b8N585",
+      "project": {
+        "updatedAt": "2025-12-02T22:38:20.973Z",
+        "createdAt": "2025-12-02T20:47:48.956Z",
+        "id": "MNkFznuFO8b8N585",
+        "name": "Will Sigmon <wjsigmon@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-02T20:47:48.956Z",
+            "createdAt": "2025-12-02T20:47:48.956Z",
+            "userId": "9078fa56-adda-4039-a803-770525ee1139",
+            "projectId": "MNkFznuFO8b8N585",
+            "user": {
+              "updatedAt": "2025-12-12T17:31:38.271Z",
+              "createdAt": "2025-12-02T20:47:47.777Z",
+              "id": "9078fa56-adda-4039-a803-770525ee1139",
+              "email": "wjsigmon@gmail.com",
+              "firstName": "Will",
+              "lastName": "Sigmon",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-02T22:38:24.407Z",
+                "personalization_survey_n8n_version": "1.122.4"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "lQ4cSakXgWIh08Iw",
+                "userActivatedAt": 1764759620031,
+                "easyAIWorkflowOnboarded": true,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1765210322440
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-12-12",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-12-09T16:05:13.591Z",
+      "createdAt": "2025-12-09T16:05:13.591Z",
+      "id": "Fjd68TuVzw0cUNIp",
+      "name": "omi"
+    },
+    {
+      "updatedAt": "2025-12-09T16:05:26.782Z",
+      "createdAt": "2025-12-09T16:05:26.782Z",
+      "id": "LrYCNe4UmsWqgxmx",
+      "name": "ai"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-12T19:03:09.525Z",
+    "createdAt": "2025-12-12T19:03:09.525Z",
+    "versionId": "1c516e93-49c0-4bab-9047-4256de2f21f7",
+    "workflowId": "9qP1nhQMcqLTAetR",
+    "nodes": [
+      {
+        "id": "webhook-conv",
+        "name": "Omi Conversation Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "disabled": false,
+        "position": [
+          250,
+          300
+        ],
+        "webhookId": "omi-conversation",
+        "parameters": {
+          "path": "omi-conversation",
+          "options": {},
+          "httpMethod": "POST",
+          "responseMode": "responseNode"
+        },
+        "typeVersion": 2,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "id": "store-conv",
+        "name": "Store Conversation",
+        "type": "n8n-nodes-base.httpRequest",
+        "disabled": false,
+        "position": [
+          470,
+          300
+        ],
+        "parameters": {
+          "url": "http://wsiglog:3100/api/v1/omi/webhook/conversation",
+          "method": "POST",
+          "options": {},
+          "jsonBody": "={{ JSON.stringify($json.body) }}",
+          "sendBody": true,
+          "specifyBody": "json"
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "analyze-conv",
+        "name": "AI Analysis",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "disabled": false,
+        "position": [
+          690,
+          300
+        ],
+        "parameters": {
+          "model": "gpt-4o-mini",
+          "options": {
+            "temperature": 0.3
+          },
+          "messages": {
+            "values": [
+              {
+                "content": "=Analyze this conversation transcript and extract:\n1. Key topics discussed\n2. Action items mentioned\n3. People mentioned\n4. Sentiment (positive/negative/neutral)\n5. A 2-sentence summary\n\nTranscript:\n{{ $('Omi Conversation Webhook').item.json.body.transcript }}\n\nRespond in JSON format with keys: topics, action_items, people, sentiment, summary"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "78Hk3U0UVtw5EYmz",
+            "name": "OpenAI API"
+          }
+        },
+        "typeVersion": 1.4
+      },
+      {
+        "id": "parse-analysis",
+        "name": "Parse Analysis",
+        "type": "n8n-nodes-base.code",
+        "disabled": false,
+        "position": [
+          910,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const analysis = JSON.parse($input.first().json.text || '{}');\nconst conv = $('Omi Conversation Webhook').first().json.body;\n\nreturn [{\n  json: {\n    conversation_id: $('Store Conversation').first().json.id,\n    omi_id: conv.id,\n    analysis: analysis,\n    has_action_items: (analysis.action_items || []).length > 0,\n    people_mentioned: analysis.people || [],\n    duration: conv.duration_seconds\n  }\n}];"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "check-actions",
+        "name": "Has Action Items?",
+        "type": "n8n-nodes-base.if",
+        "disabled": false,
+        "position": [
+          1130,
+          300
+        ],
+        "parameters": {
+          "options": {},
+          "conditions": {
+            "options": {
+              "leftValue": "",
+              "caseSensitive": true,
+              "typeValidation": "strict"
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "has-actions",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                },
+                "leftValue": "={{ $json.has_action_items }}",
+                "rightValue": true
+              }
+            ]
+          }
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "log-actions",
+        "name": "Log Action Items",
+        "type": "n8n-nodes-base.googleSheets",
+        "disabled": true,
+        "position": [
+          1350,
+          200
+        ],
+        "parameters": {
+          "columns": {
+            "value": {
+              "Date": "={{ $now.format('yyyy-MM-dd HH:mm') }}",
+              "People": "={{ $json.people_mentioned.join(', ') }}",
+              "Action Item": "={{ $json.analysis.action_items.join('; ') }}",
+              "From Conversation": "={{ $json.omi_id }}"
+            },
+            "mappingMode": "defineBelow"
+          },
+          "options": {},
+          "operation": "append",
+          "sheetName": {
+            "__rl": true,
+            "mode": "list",
+            "value": ""
+          },
+          "documentId": {
+            "__rl": true,
+            "mode": "list",
+            "value": ""
+          }
+        },
+        "typeVersion": 4.4
+      },
+      {
+        "id": "respond-processed",
+        "name": "Respond Processed",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "disabled": false,
+        "position": [
+          1350,
+          400
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {\"status\": \"processed\", \"conversation_id\": $json.conversation_id, \"analysis\": $json.analysis} }}"
+        },
+        "typeVersion": 1.1
+      }
+    ],
+    "connections": {
+      "Omi Conversation Webhook": {
+        "main": [
+          [
+            {
+              "node": "Store Conversation",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Store Conversation": {
+        "main": [
+          [
+            {
+              "node": "AI Analysis",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Analysis": {
+        "main": [
+          [
+            {
+              "node": "Parse Analysis",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Analysis": {
+        "main": [
+          [
+            {
+              "node": "Has Action Items?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Action Items?": {
+        "main": [
+          [
+            {
+              "node": "Log Action Items",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond Processed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Log Action Items": {
+        "main": [
+          [
+            {
+              "node": "Respond Processed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Will Sigmon",
+    "name": null,
+    "description": null,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2025-12-12T19:03:09.696Z",
+        "id": 284,
+        "workflowId": "9qP1nhQMcqLTAetR",
+        "versionId": "1c516e93-49c0-4bab-9047-4256de2f21f7",
+        "event": "activated",
+        "userId": "9078fa56-adda-4039-a803-770525ee1139"
+      },
+      {
+        "createdAt": "2025-12-12T19:03:35.146Z",
+        "id": 285,
+        "workflowId": "9qP1nhQMcqLTAetR",
+        "versionId": "1c516e93-49c0-4bab-9047-4256de2f21f7",
+        "event": "deactivated",
+        "userId": "9078fa56-adda-4039-a803-770525ee1139"
+      },
+      {
+        "createdAt": "2025-12-12T19:03:35.268Z",
+        "id": 286,
+        "workflowId": "9qP1nhQMcqLTAetR",
+        "versionId": "1c516e93-49c0-4bab-9047-4256de2f21f7",
+        "event": "activated",
+        "userId": "9078fa56-adda-4039-a803-770525ee1139"
+      }
+    ]
+  }
+}

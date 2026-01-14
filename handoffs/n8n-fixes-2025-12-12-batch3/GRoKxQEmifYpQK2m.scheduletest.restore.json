@@ -1,0 +1,392 @@
+{
+  "updatedAt": "2025-12-12T11:55:17.493Z",
+  "createdAt": "2025-12-09T07:18:02.151Z",
+  "id": "GRoKxQEmifYpQK2m",
+  "name": "wsiglog Backup 2 - Weekly PostgreSQL Dump",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtDay": 0,
+              "triggerAtHour": 3
+            }
+          ]
+        }
+      },
+      "name": "Weekly Sunday 3 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "667beb1f-c6be-43a5-999a-3a329375f77e"
+    },
+    {
+      "parameters": {},
+      "name": "Manual Test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ],
+      "id": "9e7f8c5e-2419-4895-bf90-b2af7830fb09"
+    },
+    {
+      "parameters": {
+        "command": "docker exec postgresql-n8n pg_dump -U n8n wsiglog > /mnt/user/data/wsiglog-backups/weekly/wsiglog-$(date +%Y-%m-%d).sql && gzip /mnt/user/data/wsiglog-backups/weekly/wsiglog-$(date +%Y-%m-%d).sql && echo 'Backup complete'",
+        "authentication": "privateKey"
+      },
+      "name": "PostgreSQL Dump",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        300,
+        100
+      ],
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "tower-ssh",
+          "name": "Tower SSH"
+        }
+      },
+      "id": "096079cc-1c59-499a-a74e-4b38bdfe921e"
+    },
+    {
+      "parameters": {
+        "command": "ls -la /mnt/user/data/wsiglog-backups/weekly/ | tail -5",
+        "authentication": "privateKey"
+      },
+      "name": "Verify Backup",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        550,
+        100
+      ],
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "tower-ssh",
+          "name": "Tower SSH"
+        }
+      },
+      "id": "1cbea9e2-dbd3-4308-b859-1be57fc7848c"
+    },
+    {
+      "parameters": {
+        "command": "find /mnt/user/data/wsiglog-backups/weekly -name '*.sql.gz' -mtime +30 -delete && echo 'Old backups cleaned'",
+        "authentication": "privateKey"
+      },
+      "name": "Cleanup Old Backups",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        800,
+        100
+      ],
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "tower-ssh",
+          "name": "Tower SSH"
+        }
+      },
+      "id": "8b14ace8-18a2-4696-b080-762f6342fe90"
+    }
+  ],
+  "connections": {
+    "Weekly Sunday 3 AM": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL Dump",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Test": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL Dump",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL Dump": {
+      "main": [
+        [
+          {
+            "node": "Verify Backup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Backup": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Old Backups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Weekly Sunday 3 AM": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "versionId": "3020bc80-ec9d-4033-bd97-bf96fce0e26c",
+  "activeVersionId": "3020bc80-ec9d-4033-bd97-bf96fce0e26c",
+  "versionCounter": 79,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-09T07:18:02.151Z",
+      "createdAt": "2025-12-09T07:18:02.151Z",
+      "role": "workflow:owner",
+      "workflowId": "GRoKxQEmifYpQK2m",
+      "projectId": "MNkFznuFO8b8N585",
+      "project": {
+        "updatedAt": "2025-12-02T22:38:20.973Z",
+        "createdAt": "2025-12-02T20:47:48.956Z",
+        "id": "MNkFznuFO8b8N585",
+        "name": "Will Sigmon <wjsigmon@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-02T20:47:48.956Z",
+            "createdAt": "2025-12-02T20:47:48.956Z",
+            "userId": "9078fa56-adda-4039-a803-770525ee1139",
+            "projectId": "MNkFznuFO8b8N585",
+            "user": {
+              "updatedAt": "2025-12-12T17:31:38.271Z",
+              "createdAt": "2025-12-02T20:47:47.777Z",
+              "id": "9078fa56-adda-4039-a803-770525ee1139",
+              "email": "wjsigmon@gmail.com",
+              "firstName": "Will",
+              "lastName": "Sigmon",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-02T22:38:24.407Z",
+                "personalization_survey_n8n_version": "1.122.4"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "lQ4cSakXgWIh08Iw",
+                "userActivatedAt": 1764759620031,
+                "easyAIWorkflowOnboarded": true,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1765210322440
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-12-12",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2025-12-12T11:55:17.494Z",
+    "createdAt": "2025-12-12T11:55:17.494Z",
+    "versionId": "3020bc80-ec9d-4033-bd97-bf96fce0e26c",
+    "workflowId": "GRoKxQEmifYpQK2m",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtDay": 0,
+                "triggerAtHour": 3
+              }
+            ]
+          }
+        },
+        "name": "Weekly Sunday 3 AM",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          0,
+          0
+        ],
+        "id": "667beb1f-c6be-43a5-999a-3a329375f77e"
+      },
+      {
+        "parameters": {},
+        "name": "Manual Test",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          200
+        ],
+        "id": "9e7f8c5e-2419-4895-bf90-b2af7830fb09"
+      },
+      {
+        "parameters": {
+          "command": "docker exec postgresql-n8n pg_dump -U n8n wsiglog > /mnt/user/data/wsiglog-backups/weekly/wsiglog-$(date +%Y-%m-%d).sql && gzip /mnt/user/data/wsiglog-backups/weekly/wsiglog-$(date +%Y-%m-%d).sql && echo 'Backup complete'",
+          "authentication": "privateKey"
+        },
+        "name": "PostgreSQL Dump",
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          300,
+          100
+        ],
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "tower-ssh",
+            "name": "Tower SSH"
+          }
+        },
+        "id": "096079cc-1c59-499a-a74e-4b38bdfe921e"
+      },
+      {
+        "parameters": {
+          "command": "ls -la /mnt/user/data/wsiglog-backups/weekly/ | tail -5",
+          "authentication": "privateKey"
+        },
+        "name": "Verify Backup",
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          550,
+          100
+        ],
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "tower-ssh",
+            "name": "Tower SSH"
+          }
+        },
+        "id": "1cbea9e2-dbd3-4308-b859-1be57fc7848c"
+      },
+      {
+        "parameters": {
+          "command": "find /mnt/user/data/wsiglog-backups/weekly -name '*.sql.gz' -mtime +30 -delete && echo 'Old backups cleaned'",
+          "authentication": "privateKey"
+        },
+        "name": "Cleanup Old Backups",
+        "type": "n8n-nodes-base.ssh",
+        "typeVersion": 1,
+        "position": [
+          800,
+          100
+        ],
+        "credentials": {
+          "sshPrivateKey": {
+            "id": "tower-ssh",
+            "name": "Tower SSH"
+          }
+        },
+        "id": "8b14ace8-18a2-4696-b080-762f6342fe90"
+      }
+    ],
+    "connections": {
+      "Weekly Sunday 3 AM": {
+        "main": [
+          [
+            {
+              "node": "PostgreSQL Dump",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual Test": {
+        "main": [
+          [
+            {
+              "node": "PostgreSQL Dump",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "PostgreSQL Dump": {
+        "main": [
+          [
+            {
+              "node": "Verify Backup",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Verify Backup": {
+        "main": [
+          [
+            {
+              "node": "Cleanup Old Backups",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Will Sigmon",
+    "name": null,
+    "description": null,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2025-12-12T11:55:17.582Z",
+        "id": 191,
+        "workflowId": "GRoKxQEmifYpQK2m",
+        "versionId": "3020bc80-ec9d-4033-bd97-bf96fce0e26c",
+        "event": "activated",
+        "userId": "9078fa56-adda-4039-a803-770525ee1139"
+      },
+      {
+        "createdAt": "2025-12-12T19:42:01.646Z",
+        "id": 353,
+        "workflowId": "GRoKxQEmifYpQK2m",
+        "versionId": "3020bc80-ec9d-4033-bd97-bf96fce0e26c",
+        "event": "deactivated",
+        "userId": "9078fa56-adda-4039-a803-770525ee1139"
+      },
+      {
+        "createdAt": "2025-12-12T19:42:01.805Z",
+        "id": 354,
+        "workflowId": "GRoKxQEmifYpQK2m",
+        "versionId": "3020bc80-ec9d-4033-bd97-bf96fce0e26c",
+        "event": "activated",
+        "userId": "9078fa56-adda-4039-a803-770525ee1139"
+      }
+    ]
+  }
+}

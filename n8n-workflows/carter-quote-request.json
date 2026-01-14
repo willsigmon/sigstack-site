@@ -1,0 +1,162 @@
+{
+  "name": "Carter Intake → Carrier Quote Requests",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "carter-quote-request",
+        "options": { "responseMode": "responseNode" }
+      },
+      "name": "Quote Request Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [250, 300],
+      "webhookId": "carter-quote-request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "quote_request",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        }
+      },
+      "name": "Is Quote Request?",
+      "type": "n8n-nodes-base.if",
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "referenceNumber", "value": "={{ $json.body.referenceNumber }}" },
+            { "name": "clientName", "value": "={{ $json.body.client.name }}" },
+            { "name": "clientEmail", "value": "={{ $json.body.client.email }}" },
+            { "name": "clientPhone", "value": "={{ $json.body.client.phone }}" },
+            { "name": "leadTier", "value": "={{ $json.body.leadTier }}" },
+            { "name": "coverageTypes", "value": "={{ $json.body.coverageTypes.join(', ') }}" },
+            { "name": "generatedForms", "value": "={{ $json.body.generatedForms.join(', ') }}" }
+          ]
+        }
+      },
+      "name": "Extract Data",
+      "type": "n8n-nodes-base.set",
+      "position": [690, 200]
+    },
+    {
+      "parameters": {
+        "content": "## 🚗 New Quote Request\n\n**Reference:** {{ $json.referenceNumber }}\n**Client:** {{ $json.clientName }}\n**Lead Tier:** {{ $json.leadTier }}\n\n**Coverage Types:** {{ $json.coverageTypes }}\n**Forms Generated:** {{ $json.generatedForms }}\n\n**Contact:**\n📧 {{ $json.clientEmail }}\n📞 {{ $json.clientPhone }}",
+        "options": {}
+      },
+      "name": "Format Slack Message",
+      "type": "n8n-nodes-base.markdown",
+      "position": [910, 200]
+    },
+    {
+      "parameters": {
+        "channel": "#carter-leads",
+        "text": "={{ $json.data }}",
+        "otherOptions": {}
+      },
+      "name": "Send to Slack",
+      "type": "n8n-nodes-base.slack",
+      "position": [1130, 200],
+      "disabled": true,
+      "notesInFlow": true,
+      "notes": "Enable and configure with Slack credentials"
+    },
+    {
+      "parameters": {
+        "fromEmail": "notifications@carterhelms.com",
+        "toEmail": "carter.helms@highstreetins.com",
+        "subject": "🚗 New Quote Request: {{ $json.referenceNumber }}",
+        "text": "New quote request received.\n\nClient: {{ $json.clientName }}\nLead Tier: {{ $json.leadTier }}\nCoverage: {{ $json.coverageTypes }}\n\nForms generated: {{ $json.generatedForms }}\n\nContact: {{ $json.clientEmail }} | {{ $json.clientPhone }}",
+        "options": {}
+      },
+      "name": "Email Carter",
+      "type": "n8n-nodes-base.emailSend",
+      "position": [1130, 400],
+      "disabled": true,
+      "notesInFlow": true,
+      "notes": "Enable and configure with SMTP credentials"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.CARTERHELMS_API_URL }}/api/webhooks/n8n",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "event", "value": "quote.processing" },
+            { "name": "referenceNumber", "value": "={{ $json.referenceNumber }}" },
+            { "name": "status", "value": "received_by_n8n" }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Status in App",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1350, 300],
+      "disabled": true,
+      "notesInFlow": true,
+      "notes": "Callback to update quote status"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, message: 'Quote request processed', referenceNumber: $json.referenceNumber, leadTier: $json.leadTier } }}"
+      },
+      "name": "Return Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1570, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: false, error: 'Invalid event type' } }}"
+      },
+      "name": "Return Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [690, 400]
+    }
+  ],
+  "connections": {
+    "Quote Request Webhook": {
+      "main": [[{ "node": "Is Quote Request?", "type": "main", "index": 0 }]]
+    },
+    "Is Quote Request?": {
+      "main": [
+        [{ "node": "Extract Data", "type": "main", "index": 0 }],
+        [{ "node": "Return Error", "type": "main", "index": 0 }]
+      ]
+    },
+    "Extract Data": {
+      "main": [[{ "node": "Format Slack Message", "type": "main", "index": 0 }]]
+    },
+    "Format Slack Message": {
+      "main": [
+        [
+          { "node": "Send to Slack", "type": "main", "index": 0 },
+          { "node": "Email Carter", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Send to Slack": {
+      "main": [[{ "node": "Update Status in App", "type": "main", "index": 0 }]]
+    },
+    "Email Carter": {
+      "main": [[{ "node": "Update Status in App", "type": "main", "index": 0 }]]
+    },
+    "Update Status in App": {
+      "main": [[{ "node": "Return Success", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "pinData": {},
+  "tags": [{ "name": "carter" }, { "name": "insurance" }]
+}

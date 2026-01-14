@@ -1,0 +1,314 @@
+Puppeteer node: Container detected via .dockerenv file
+[
+  {
+    "updatedAt": "2025-12-12T07:13:00.696Z",
+    "createdAt": "2025-12-10T20:45:40.331Z",
+    "id": "NTFttsFRwwWGgmXE",
+    "name": "BRAIN Daily Digest",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "id": "schedule",
+        "name": "11:55pm Daily",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          200,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "55 23 * * *"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "get_health",
+        "name": "Get Health Stats",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          420,
+          200
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT steps, distance_km, COALESCE(floors_ascended,0)+COALESCE(floors_descended,0) as floors FROM health_steps WHERE date = CURRENT_DATE LIMIT 1"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "xdu7fsxoP9U4aQBA",
+            "name": "PostgreSQL wsiglog"
+          }
+        }
+      },
+      {
+        "id": "get_locations",
+        "name": "Get Locations",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          420,
+          350
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT COUNT(DISTINCT city) as locations FROM location_history WHERE timestamp::date = CURRENT_DATE"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "xdu7fsxoP9U4aQBA",
+            "name": "PostgreSQL wsiglog"
+          }
+        }
+      },
+      {
+        "id": "get_photos",
+        "name": "Get Photos",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          420,
+          500
+        ],
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT COUNT(*) as photos FROM photo_metadata WHERE taken_at::date = CURRENT_DATE"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "xdu7fsxoP9U4aQBA",
+            "name": "PostgreSQL wsiglog"
+          }
+        }
+      },
+      {
+        "id": "merge",
+        "name": "Merge Data",
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3,
+        "position": [
+          640,
+          350
+        ],
+        "parameters": {
+          "mode": "combine",
+          "combineBy": "combineAll"
+        }
+      },
+      {
+        "id": "build_digest",
+        "name": "Build Digest",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          860,
+          350
+        ],
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst today = new Date().toISOString().split('T')[0];\n\nlet steps = 0, distance = 0, floors = 0, locations = 0, photos = 0;\n\nitems.forEach(item => {\n  if (item.json.steps) steps = item.json.steps;\n  if (item.json.distance_km) distance = item.json.distance_km;\n  if (item.json.floors) floors = item.json.floors;\n  if (item.json.locations) locations = item.json.locations;\n  if (item.json.photos) photos = item.json.photos;\n});\n\nconst summary = `${steps.toLocaleString()} steps, ${distance.toFixed(1)}km, ${locations} places, ${photos} photos`;\n\nreturn [{\n  json: {\n    date: today,\n    steps,\n    distance_km: distance,\n    floors,\n    locations_visited: locations,\n    photos_taken: photos,\n    summary\n  }\n}];"
+        }
+      },
+      {
+        "id": "store_digest",
+        "name": "Store Digest",
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.5,
+        "position": [
+          1080,
+          350
+        ],
+        "parameters": {
+          "operation": "insert",
+          "table": {
+            "__rl": true,
+            "value": "daily_digest",
+            "mode": "list"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "date": "={{ $json.date }}",
+              "steps": "={{ $json.steps }}",
+              "distance_km": "={{ $json.distance_km }}",
+              "floors": "={{ $json.floors }}",
+              "locations_visited": "={{ $json.locations_visited }}",
+              "photos_taken": "={{ $json.photos_taken }}",
+              "summary": "={{ $json.summary }}"
+            }
+          }
+        },
+        "credentials": {
+          "postgres": {
+            "id": "xdu7fsxoP9U4aQBA",
+            "name": "PostgreSQL wsiglog"
+          }
+        }
+      },
+      {
+        "id": "notify",
+        "name": "Send ntfy",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1300,
+          350
+        ],
+        "parameters": {
+          "method": "POST",
+          "url": "http://192.168.1.139:2586/brain",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Title",
+                "value": "Daily Digest"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "",
+                "value": "={{ $json.summary }}"
+              }
+            ]
+          },
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "11:55pm Daily": {
+        "main": [
+          [
+            {
+              "node": "Get Health Stats",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Get Locations",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Get Photos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Health Stats": {
+        "main": [
+          [
+            {
+              "node": "Merge Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Locations": {
+        "main": [
+          [
+            {
+              "node": "Merge Data",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Get Photos": {
+        "main": [
+          [
+            {
+              "node": "Merge Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge Data": {
+        "main": [
+          [
+            {
+              "node": "Build Digest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Digest": {
+        "main": [
+          [
+            {
+              "node": "Store Digest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Store Digest": {
+        "main": [
+          [
+            {
+              "node": "Send ntfy",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false
+    },
+    "staticData": {
+      "node:11:55pm Daily": {
+        "recurrenceRules": []
+      }
+    },
+    "meta": null,
+    "pinData": null,
+    "versionId": "ec3d1c55-97aa-4531-bf06-36731d238fd3",
+    "activeVersionId": "ec3d1c55-97aa-4531-bf06-36731d238fd3",
+    "versionCounter": 29,
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2025-12-10T20:45:40.331Z",
+        "createdAt": "2025-12-10T20:45:40.331Z",
+        "role": "workflow:owner",
+        "workflowId": "NTFttsFRwwWGgmXE",
+        "projectId": "MNkFznuFO8b8N585",
+        "project": {
+          "updatedAt": "2025-12-02T22:38:20.973Z",
+          "createdAt": "2025-12-02T20:47:48.956Z",
+          "id": "MNkFznuFO8b8N585",
+          "name": "Will Sigmon <wjsigmon@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null
+        }
+      }
+    ]
+  }
+]

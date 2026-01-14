@@ -1,0 +1,49 @@
+{
+  "_comment": "Portable MCP server configs for Claude Code. Copy relevant sections to ~/.claude.json",
+  "manus-mcp": {
+    "type": "stdio",
+    "command": "uv",
+    "args": ["--directory", "$HOME/manusaisetup", "run", "mcp_server.py"],
+    "env": {
+      "SANDBOX_DIR": "$HOME/manus-sandbox",
+      "BROWSER_HEADLESS": "true"
+    },
+    "notes": "Requires: git clone manus-mcp into ~/manusaisetup, uv installed"
+  },
+  "n8n": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "n8n-mcp"],
+    "env": {
+      "N8N_API_KEY": "SET_FROM_ENV",
+      "N8N_URL": "https://n8n.wsig.me"
+    },
+    "notes": "Get API key from n8n Settings > API"
+  },
+  "supabase": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "supabase-mcp-server", "--access-token", "SET_FROM_ENV"],
+    "env": {},
+    "notes": "Get access token from Supabase dashboard"
+  },
+  "sosumi": {
+    "type": "http",
+    "url": "https://sosumi.ai/mcp",
+    "notes": "Apple docs - no auth needed"
+  },
+  "github": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "env": {
+      "GITHUB_PERSONAL_ACCESS_TOKEN": "SET_FROM_ENV"
+    }
+  },
+  "memory": {
+    "type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-memory"],
+    "env": {}
+  }
+}

@@ -1,0 +1,211 @@
+[
+  {
+    "updatedAt": "2025-12-12T17:21:38.944Z",
+    "createdAt": "2025-12-10T20:46:08.239Z",
+    "id": "I3wgi4YWfC1KoozS",
+    "name": "BRAIN Location from HA Companion",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "id": "schedule",
+        "name": "Every 5 min",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "position": [
+          200,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 5
+              }
+            ]
+          }
+        },
+        "typeVersion": 1.2
+      },
+      {
+        "id": "fetch_ha",
+        "name": "Get Device Tracker",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          420,
+          300
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:8124/api/states/device_tracker.wills_iphone_16_pro_max_2",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkYzZiNTIzY2QwYTI0NWIyODI2ZGFiMjU2NzgyYTEyMCIsImlhdCI6MTc2NTMwOTM1MSwiZXhwIjoyMDgwNjY5MzUxfQ.ye4OEDsMGw34tLewmFLo6KTzDBbk1Q2wzLleubsh1lw"
+              }
+            ]
+          }
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "extract",
+        "name": "Extract Location",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          640,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const data = $input.first().json;\nconst attrs = data.attributes || {};\n\nconst lat = attrs.latitude;\nconst lng = attrs.longitude;\n\nif (lat == null || lng == null) {\n  return []; // Skip if no coords\n}\n\nconst timestamp = data.last_updated || data.last_changed || new Date().toISOString();\n\nreturn [{\n  json: {\n    timestamp,\n    lat,\n    lng,\n    accuracy: attrs.gps_accuracy || null,\n    altitude: attrs.altitude || null,\n    speed: attrs.speed || null,\n    battery: attrs.battery_level || null,\n    source: \"ha_companion\",\n    place_name: attrs.friendly_name || null\n  }\n}];"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "store",
+        "name": "Store Location",
+        "type": "n8n-nodes-base.postgres",
+        "position": [
+          860,
+          300
+        ],
+        "parameters": {
+          "table": {
+            "__rl": true,
+            "mode": "list",
+            "value": "location_history"
+          },
+          "columns": {
+            "value": {
+              "lat": "={{ $json.lat }}",
+              "lng": "={{ $json.lng }}",
+              "speed": "={{ $json.speed }}",
+              "source": "={{ $json.source }}",
+              "battery": "={{ $json.battery }}",
+              "accuracy": "={{ $json.accuracy }}",
+              "altitude": "={{ $json.altitude }}",
+              "place_name": "={{ $json.place_name }}",
+              "timestamp": "={{ $json.timestamp }}"
+            },
+            "mappingMode": "defineBelow"
+          },
+          "operation": "insert"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "xdu7fsxoP9U4aQBA",
+            "name": "PostgreSQL wsiglog"
+          }
+        },
+        "typeVersion": 2.5
+      }
+    ],
+    "connections": {
+      "Every 5 min": {
+        "main": [
+          [
+            {
+              "node": "Get Device Tracker",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Device Tracker": {
+        "main": [
+          [
+            {
+              "node": "Extract Location",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Location": {
+        "main": [
+          [
+            {
+              "node": "Store Location",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false
+    },
+    "staticData": {
+      "node:Every 5 min": {
+        "recurrenceRules": []
+      }
+    },
+    "meta": null,
+    "pinData": null,
+    "versionId": "a55d9f44-b43f-4d50-a8f5-8e351b131dda",
+    "activeVersionId": "a55d9f44-b43f-4d50-a8f5-8e351b131dda",
+    "versionCounter": 46,
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2025-12-10T20:46:08.239Z",
+        "createdAt": "2025-12-10T20:46:08.239Z",
+        "role": "workflow:owner",
+        "workflowId": "I3wgi4YWfC1KoozS",
+        "projectId": "MNkFznuFO8b8N585",
+        "project": {
+          "updatedAt": "2025-12-02T22:38:20.973Z",
+          "createdAt": "2025-12-02T20:47:48.956Z",
+          "id": "MNkFznuFO8b8N585",
+          "name": "Will Sigmon <wjsigmon@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "projectRelations": [
+            {
+              "updatedAt": "2025-12-02T20:47:48.956Z",
+              "createdAt": "2025-12-02T20:47:48.956Z",
+              "userId": "9078fa56-adda-4039-a803-770525ee1139",
+              "projectId": "MNkFznuFO8b8N585",
+              "user": {
+                "updatedAt": "2025-12-12T12:30:39.831Z",
+                "createdAt": "2025-12-02T20:47:47.777Z",
+                "id": "9078fa56-adda-4039-a803-770525ee1139",
+                "email": "wjsigmon@gmail.com",
+                "firstName": "Will",
+                "lastName": "Sigmon",
+                "personalizationAnswers": {
+                  "version": "v4",
+                  "personalization_survey_submitted_at": "2025-12-02T22:38:24.407Z",
+                  "personalization_survey_n8n_version": "1.122.4"
+                },
+                "settings": {
+                  "userActivated": true,
+                  "firstSuccessfulWorkflowId": "lQ4cSakXgWIh08Iw",
+                  "userActivatedAt": 1764759620031,
+                  "easyAIWorkflowOnboarded": true,
+                  "npsSurvey": {
+                    "responded": true,
+                    "lastShownAt": 1765210322440
+                  }
+                },
+                "disabled": false,
+                "mfaEnabled": false,
+                "lastActiveAt": "2025-12-12",
+                "isPending": false
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

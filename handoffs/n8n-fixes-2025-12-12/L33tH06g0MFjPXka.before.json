@@ -1,0 +1,174 @@
+[
+  {
+    "updatedAt": "2025-12-12T11:21:43.473Z",
+    "createdAt": "2025-12-10T19:49:35.726Z",
+    "id": "L33tH06g0MFjPXka",
+    "name": "BRAIN Health from HA Companion",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "id": "schedule",
+        "name": "Daily 9pm",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "position": [
+          200,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 21 * * *"
+              }
+            ]
+          }
+        },
+        "typeVersion": 1.2
+      },
+      {
+        "id": "fetch_ha",
+        "name": "Get HA Health Sensors",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          420,
+          300
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:8124/api/states",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkYzZiNTIzY2QwYTI0NWIyODI2ZGFiMjU2NzgyYTEyMCIsImlhdCI6MTc2NTMwOTM1MSwiZXhwIjoyMDgwNjY5MzUxfQ.ye4OEDsMGw34tLewmFLo6KTzDBbk1Q2wzLleubsh1lw"
+              }
+            ]
+          }
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "extract",
+        "name": "Extract Health Data",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          640,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const states = $input.first().json;\nconst today = new Date().toISOString().split('T')[0];\n\nconst find = (id) => {\n  const s = states.find(s => s.entity_id === id);\n  return s ? parseFloat(s.state) || 0 : 0;\n};\n\nreturn [{\n  json: {\n    date: today,\n    steps: find(sensor.wills_iphone_16_pro_max_steps),\n    distance_m: find(sensor.wills_iphone_16_pro_max_distance),\n    distance_km: find(sensor.wills_iphone_16_pro_max_distance) / 1000,\n    floors_up: find(sensor.wills_iphone_16_pro_max_floors_ascended),\n    floors_down: find(sensor.wills_iphone_16_pro_max_floors_descended),\n    avg_pace_ms: find(sensor.wills_iphone_16_pro_max_average_active_pace),\n    source: ha_companion\n  }\n}];"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "store",
+        "name": "Store in PostgreSQL",
+        "type": "n8n-nodes-base.postgres",
+        "position": [
+          860,
+          300
+        ],
+        "parameters": {
+          "table": {
+            "__rl": true,
+            "mode": "list",
+            "value": "health_steps"
+          },
+          "columns": {
+            "value": {
+              "date": "={{ $json.date }}",
+              "steps": "={{ $json.steps }}",
+              "source": "={{ $json.source }}",
+              "avg_pace": "={{ $json.avg_pace_ms }}",
+              "distance_km": "={{ $json.distance_km }}",
+              "floors_ascended": "={{ $json.floors_up }}",
+              "floors_descended": "={{ $json.floors_down }}"
+            },
+            "mappingMode": "defineBelow"
+          },
+          "operation": "insert"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "xdu7fsxoP9U4aQBA",
+            "name": "PostgreSQL wsiglog"
+          }
+        },
+        "typeVersion": 2.5
+      }
+    ],
+    "connections": {
+      "Daily 9pm": {
+        "main": [
+          [
+            {
+              "node": "Get HA Health Sensors",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get HA Health Sensors": {
+        "main": [
+          [
+            {
+              "node": "Extract Health Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Health Data": {
+        "main": [
+          [
+            {
+              "node": "Store in PostgreSQL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false
+    },
+    "staticData": {
+      "node:Daily 9pm": {
+        "recurrenceRules": []
+      }
+    },
+    "meta": null,
+    "pinData": null,
+    "versionId": "378a1799-4f09-487f-9ff2-4d07e5da237d",
+    "activeVersionId": "378a1799-4f09-487f-9ff2-4d07e5da237d",
+    "versionCounter": 34,
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2025-12-10T19:49:35.726Z",
+        "createdAt": "2025-12-10T19:49:35.726Z",
+        "role": "workflow:owner",
+        "workflowId": "L33tH06g0MFjPXka",
+        "projectId": "MNkFznuFO8b8N585",
+        "project": {
+          "updatedAt": "2025-12-02T22:38:20.973Z",
+          "createdAt": "2025-12-02T20:47:48.956Z",
+          "id": "MNkFznuFO8b8N585",
+          "name": "Will Sigmon <wjsigmon@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null
+        }
+      }
+    ]
+  }
+]

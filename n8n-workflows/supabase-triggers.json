@@ -1,0 +1,110 @@
+{
+  "name": "Supabase → Push Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "supabase-webhook",
+        "options": {}
+      },
+      "name": "Supabase Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [250, 300],
+      "webhookId": "supabase-hook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            { "leftValue": "={{ $json.body.table }}", "rightValue": "user_progress", "operator": { "type": "string", "operation": "equals" } }
+          ]
+        }
+      },
+      "name": "Is Progress Update?",
+      "type": "n8n-nodes-base.if",
+      "position": [450, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            { "leftValue": "={{ $json.body.table }}", "rightValue": "community_posts", "operator": { "type": "string", "operation": "equals" } }
+          ]
+        }
+      },
+      "name": "Is Community Post?",
+      "type": "n8n-nodes-base.if",
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.onesignal.com/notifications",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Basic {{ $env.ONESIGNAL_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "app_id", "value": "={{ $env.ONESIGNAL_APP_ID }}" },
+            { "name": "include_external_user_ids", "value": "={{ [$json.body.record.user_id] }}" },
+            { "name": "headings", "value": "={{ { en: '🎉 Progress Update!' } }}" },
+            { "name": "contents", "value": "={{ { en: 'You completed ' + $json.body.record.item_name + '!' } }}" }
+          ]
+        }
+      },
+      "name": "Send Progress Push",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [700, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.onesignal.com/notifications",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Basic {{ $env.ONESIGNAL_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "app_id", "value": "={{ $env.ONESIGNAL_APP_ID }}" },
+            { "name": "included_segments", "value": "={{ ['Subscribed Users'] }}" },
+            { "name": "headings", "value": "={{ { en: '💬 New in Community' } }}" },
+            { "name": "contents", "value": "={{ { en: $json.body.record.author_name + ' shared: ' + $json.body.record.title } }}" }
+          ]
+        }
+      },
+      "name": "Send Community Push",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [700, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log to Supabase analytics\nconst event = {\n  type: $input.first().json.body.type,\n  table: $input.first().json.body.table,\n  timestamp: new Date().toISOString()\n};\nreturn [{ json: event }];"
+      },
+      "name": "Log Event",
+      "type": "n8n-nodes-base.code",
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Supabase Webhook": { "main": [[{ "node": "Is Progress Update?", "type": "main", "index": 0 }, { "node": "Is Community Post?", "type": "main", "index": 0 }]] },
+    "Is Progress Update?": { "main": [[{ "node": "Send Progress Push", "type": "main", "index": 0 }], []] },
+    "Is Community Post?": { "main": [[{ "node": "Send Community Push", "type": "main", "index": 0 }], []] },
+    "Send Progress Push": { "main": [[{ "node": "Log Event", "type": "main", "index": 0 }]] },
+    "Send Community Push": { "main": [[{ "node": "Log Event", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

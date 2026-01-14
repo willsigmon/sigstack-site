@@ -1,0 +1,131 @@
+{
+  "name": "Immich - Family Album Auto-Share",
+  "nodes": [
+    {
+      "id": "schedule",
+      "name": "Twice Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        100,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 12
+            }
+          ]
+        }
+      },
+      "typeVersion": 1
+    },
+    {
+      "id": "get-albums",
+      "name": "Get All Albums",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        300,
+        300
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:2283/api/albums",
+        "method": "GET",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "typeVersion": 4,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0uKJ5h4uJiUpU1j5",
+          "name": "Immich API"
+        }
+      }
+    },
+    {
+      "id": "filter-shareable",
+      "name": "Find Albums to Share",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        500,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// n8n may split an array response into multiple items; normalize to an array\nconst albums = $input.all().map(i => i.json);\nconst familyPatterns = ['Sadie', 'Callie', 'Birthday', 'Christmas', 'Easter', 'Family', 'Kids', 'Gymnastics'];\n\n// TODO: replace with Cassie's Immich user id\nconst cassieUserId = 'CASSIE_USER_ID_HERE';\n\n// If not configured, no-op (avoid failing the whole workflow)\nif (!cassieUserId || cassieUserId.includes('HERE')) {\n  return [];\n}\n\nconst toShare = albums.filter(album => {\n  const name = album.albumName || '';\n  const isMatch = familyPatterns.some(p => name.includes(p));\n  const alreadyShared = Array.isArray(album.sharedUsers) && album.sharedUsers.some(u => u.id === cassieUserId);\n  return isMatch && !alreadyShared;\n});\n\nreturn toShare.map(a => ({ json: { albumId: a.id, albumName: a.albumName, shareWith: cassieUserId } }));"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "share-album",
+      "name": "Share Album",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        700,
+        300
+      ],
+      "parameters": {
+        "url": "={{ 'http://192.168.1.139:2283/api/albums/' + $json.albumId + '/users' }}",
+        "method": "PUT",
+        "jsonBody": "={{ { \"sharedUserIds\": [$json.shareWith] } }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "typeVersion": 4,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0uKJ5h4uJiUpU1j5",
+          "name": "Immich API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Twice Daily": {
+      "main": [
+        [
+          {
+            "node": "Get All Albums",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Albums": {
+      "main": [
+        [
+          {
+            "node": "Find Albums to Share",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Albums to Share": {
+      "main": [
+        [
+          {
+            "node": "Share Album",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Twice Daily": {
+      "recurrenceRules": [
+        12
+      ]
+    }
+  }
+}

@@ -1,0 +1,169 @@
+[
+  {
+    "updatedAt": "2025-12-07T19:00:32.126Z",
+    "createdAt": "2025-12-02T22:39:45.679Z",
+    "id": "q6YSvc6sihO1pAjM",
+    "name": "Dotfiles Hub Auto-Sync",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 1
+              }
+            ]
+          }
+        },
+        "name": "Every Hour",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "position": [
+          250,
+          300
+        ],
+        "id": "78ab3f49-6fc2-41bd-9e9f-73eabccb8aa9"
+      },
+      {
+        "parameters": {
+          "command": "ssh -o StrictHostKeyChecking=no root@tower.local \"cd ~/.dotfiles-hub && git pull origin main 2>&1\""
+        },
+        "name": "Git Pull",
+        "type": "n8n-nodes-base.executeCommand",
+        "position": [
+          450,
+          300
+        ],
+        "id": "5b9a73f5-4709-4fc2-adae-c489d79a7d48"
+      },
+      {
+        "parameters": {
+          "command": "ssh -o StrictHostKeyChecking=no root@tower.local \"cd ~/.dotfiles-hub && git status --porcelain\""
+        },
+        "name": "Check Changes",
+        "type": "n8n-nodes-base.executeCommand",
+        "position": [
+          650,
+          300
+        ],
+        "id": "18eea6b9-fe84-4ac5-8038-13bd1933eaf3"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.stdout }}",
+                "operation": "isNotEmpty"
+              }
+            ]
+          }
+        },
+        "name": "Has Changes?",
+        "type": "n8n-nodes-base.if",
+        "position": [
+          850,
+          300
+        ],
+        "id": "211238e0-94f3-464b-94bd-dd482e845ad2"
+      },
+      {
+        "parameters": {
+          "command": "ssh -o StrictHostKeyChecking=no root@tower.local \"cd ~/.dotfiles-hub && git add -A && (git diff --cached --quiet || git commit -m \\\"Auto-sync \\$(date +%Y-%m-%d_%H:%M)\\\") && git push origin main 2>&1 || echo \\\"Nothing to push\\\"\""
+        },
+        "name": "Git Push",
+        "type": "n8n-nodes-base.executeCommand",
+        "position": [
+          1050,
+          200
+        ],
+        "id": "74368d0e-3e46-4b93-b10e-51126204d431"
+      }
+    ],
+    "connections": {
+      "Every Hour": {
+        "main": [
+          [
+            {
+              "node": "Git Pull",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Git Pull": {
+        "main": [
+          [
+            {
+              "node": "Check Changes",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Changes": {
+        "main": [
+          [
+            {
+              "node": "Has Changes?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Changes?": {
+        "main": [
+          [
+            {
+              "node": "Git Push",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false
+    },
+    "staticData": {
+      "node:Every Hour": {
+        "recurrenceRules": []
+      }
+    },
+    "meta": null,
+    "pinData": null,
+    "versionId": "91905e1e-8353-47f2-b094-350cff94b701",
+    "activeVersionId": null,
+    "versionCounter": 126,
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2025-12-02T22:39:45.679Z",
+        "createdAt": "2025-12-02T22:39:45.679Z",
+        "role": "workflow:owner",
+        "workflowId": "q6YSvc6sihO1pAjM",
+        "projectId": "MNkFznuFO8b8N585",
+        "project": {
+          "updatedAt": "2025-12-02T22:38:20.973Z",
+          "createdAt": "2025-12-02T20:47:48.956Z",
+          "id": "MNkFznuFO8b8N585",
+          "name": "Will Sigmon <wjsigmon@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null
+        }
+      }
+    ]
+  }
+]

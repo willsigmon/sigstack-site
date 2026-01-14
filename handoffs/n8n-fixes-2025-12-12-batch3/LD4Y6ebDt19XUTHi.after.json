@@ -1,0 +1,577 @@
+{
+  "updatedAt": "2025-12-12T12:49:47.775Z",
+  "createdAt": "2025-12-09T16:05:32.262Z",
+  "id": "LD4Y6ebDt19XUTHi",
+  "name": "Omi Daily Digest",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "schedule-daily",
+      "name": "Daily at 8 PM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "disabled": false,
+      "position": [
+        250,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24,
+              "triggerAtHour": 20
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.2
+    },
+    {
+      "id": "get-conversations",
+      "name": "Get Today Conversations",
+      "type": "n8n-nodes-base.httpRequest",
+      "disabled": false,
+      "position": [
+        470,
+        200
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3100/api/v1/omi/conversations?limit=50",
+        "options": {}
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "get-memories",
+      "name": "Get Today Memories",
+      "type": "n8n-nodes-base.httpRequest",
+      "disabled": false,
+      "position": [
+        470,
+        400
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3100/api/v1/omi/memories?limit=50",
+        "options": {}
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "get-stats",
+      "name": "Get Omi Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "disabled": false,
+      "position": [
+        470,
+        300
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3100/api/v1/omi/stats",
+        "options": {}
+      },
+      "typeVersion": 4.2
+    },
+    {
+      "id": "merge-data",
+      "name": "Merge All Data",
+      "type": "n8n-nodes-base.merge",
+      "disabled": false,
+      "position": [
+        690,
+        300
+      ],
+      "parameters": {
+        "mode": "combine",
+        "options": {},
+        "combineBy": "combineAll"
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "build-digest",
+      "name": "Build Daily Digest",
+      "type": "n8n-nodes-base.code",
+      "disabled": false,
+      "position": [
+        910,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst today = new Date().toISOString().split('T')[0];\n\n// Filter for today's data\nconst conversations = (items[0]?.json || []).filter(c => \n  c.started_at && c.started_at.startsWith(today)\n);\nconst memories = (items[1]?.json || []).filter(m => \n  m.created_at && m.created_at.startsWith(today)\n);\nconst stats = items[2]?.json || {};\n\nconst totalMinutes = conversations.reduce((sum, c) => \n  sum + (c.duration_seconds || 0) / 60, 0\n);\n\nreturn [{\n  json: {\n    date: today,\n    conversation_count: conversations.length,\n    memory_count: memories.length,\n    total_recording_minutes: Math.round(totalMinutes),\n    conversations: conversations.slice(0, 10).map(c => ({\n      time: c.started_at,\n      duration: c.duration_seconds,\n      summary: c.summary\n    })),\n    memories: memories.slice(0, 10).map(m => ({\n      content: m.content,\n      category: m.category\n    })),\n    overall_stats: stats\n  }\n}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "generate-summary",
+      "name": "AI Daily Summary",
+      "type": "n8n-nodes-base.code",
+      "disabled": false,
+      "position": [
+        1130,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Lightweight summary (no external LLM dependency)\nconst d = $input.first().json || {};\nconst date = d.date || $now.toISODate();\nconst convCount = d.conversation_count ?? 0;\nconst memCount = d.memory_count ?? 0;\nconst minutes = d.total_recording_minutes ?? 0;\n\nconst topConvo = Array.isArray(d.conversations) && d.conversations.length\n  ? (d.conversations[0].title || d.conversations[0].summary || 'one conversation')\n  : null;\n\nconst topMemory = Array.isArray(d.memories) && d.memories.length\n  ? (d.memories[0].title || d.memories[0].summary || 'one memory')\n  : null;\n\nlet text = `On ${date}, you captured ${convCount} conversation${convCount === 1 ? '' : 's'} and ${memCount} memory${memCount === 1 ? '' : 'ies'} in about ${minutes} minutes.`;\nif (topConvo) text += ` A highlight: ${topConvo}.`;\nif (topMemory) text += ` Notable memory: ${topMemory}.`;\ntext += ' (AI summary temporarily disabled.)';\n\nreturn [{ json: { text } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "save-digest",
+      "name": "Save to BRAIN",
+      "type": "n8n-nodes-base.httpRequest",
+      "disabled": false,
+      "position": [
+        1350,
+        300
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3100/api/v1/notes",
+        "method": "POST",
+        "options": {},
+        "jsonBody": "={{ ({\n  title: `Daily Omi Digest - ${$node[\"Build Daily Digest\"].json.date}` ,\n  content: $json.text,\n  tags: [\"omi\", \"daily-digest\", \"auto-generated\"],\n  source: \"n8n-omi-digest\",\n  metadata: {\n    conversations: $node[\"Build Daily Digest\"].json.conversation_count,\n    memories: $node[\"Build Daily Digest\"].json.memory_count,\n    minutes: $node[\"Build Daily Digest\"].json.total_recording_minutes,\n  },\n}) }}",
+        "sendBody": true,
+        "specifyBody": "json"
+      },
+      "typeVersion": 4.2
+    }
+  ],
+  "connections": {
+    "Daily at 8 PM": {
+      "main": [
+        [
+          {
+            "node": "Get Today Conversations",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Today Memories",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Omi Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Today Conversations": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Today Memories": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get Omi Stats": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge All Data": {
+      "main": [
+        [
+          {
+            "node": "Build Daily Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Daily Digest": {
+      "main": [
+        [
+          {
+            "node": "AI Daily Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Daily Summary": {
+      "main": [
+        [
+          {
+            "node": "Save to BRAIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Daily at 8 PM": {
+      "recurrenceRules": [
+        0
+      ]
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "versionId": "4e961760-a839-48f1-b3dc-2f3b04326896",
+  "activeVersionId": "4e961760-a839-48f1-b3dc-2f3b04326896",
+  "versionCounter": 75,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-09T16:05:32.262Z",
+      "createdAt": "2025-12-09T16:05:32.262Z",
+      "role": "workflow:owner",
+      "workflowId": "LD4Y6ebDt19XUTHi",
+      "projectId": "MNkFznuFO8b8N585",
+      "project": {
+        "updatedAt": "2025-12-02T22:38:20.973Z",
+        "createdAt": "2025-12-02T20:47:48.956Z",
+        "id": "MNkFznuFO8b8N585",
+        "name": "Will Sigmon <wjsigmon@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-02T20:47:48.956Z",
+            "createdAt": "2025-12-02T20:47:48.956Z",
+            "userId": "9078fa56-adda-4039-a803-770525ee1139",
+            "projectId": "MNkFznuFO8b8N585",
+            "user": {
+              "updatedAt": "2025-12-12T17:31:38.271Z",
+              "createdAt": "2025-12-02T20:47:47.777Z",
+              "id": "9078fa56-adda-4039-a803-770525ee1139",
+              "email": "wjsigmon@gmail.com",
+              "firstName": "Will",
+              "lastName": "Sigmon",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-02T22:38:24.407Z",
+                "personalization_survey_n8n_version": "1.122.4"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "lQ4cSakXgWIh08Iw",
+                "userActivatedAt": 1764759620031,
+                "easyAIWorkflowOnboarded": true,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1765210322440
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-12-12",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-12-09T16:05:13.591Z",
+      "createdAt": "2025-12-09T16:05:13.591Z",
+      "id": "Fjd68TuVzw0cUNIp",
+      "name": "omi"
+    },
+    {
+      "updatedAt": "2025-12-09T16:05:32.262Z",
+      "createdAt": "2025-12-09T16:05:32.262Z",
+      "id": "wum941duo2NRhEZw",
+      "name": "digest"
+    },
+    {
+      "updatedAt": "2025-12-09T16:05:32.262Z",
+      "createdAt": "2025-12-09T16:05:32.262Z",
+      "id": "oyXJVHTE73BvBGLr",
+      "name": "scheduled"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-12T12:49:47.777Z",
+    "createdAt": "2025-12-12T12:49:47.777Z",
+    "versionId": "4e961760-a839-48f1-b3dc-2f3b04326896",
+    "workflowId": "LD4Y6ebDt19XUTHi",
+    "nodes": [
+      {
+        "id": "schedule-daily",
+        "name": "Daily at 8 PM",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "disabled": false,
+        "position": [
+          250,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 24,
+                "triggerAtHour": 20
+              }
+            ]
+          }
+        },
+        "typeVersion": 1.2
+      },
+      {
+        "id": "get-conversations",
+        "name": "Get Today Conversations",
+        "type": "n8n-nodes-base.httpRequest",
+        "disabled": false,
+        "position": [
+          470,
+          200
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:3100/api/v1/omi/conversations?limit=50",
+          "options": {}
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "get-memories",
+        "name": "Get Today Memories",
+        "type": "n8n-nodes-base.httpRequest",
+        "disabled": false,
+        "position": [
+          470,
+          400
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:3100/api/v1/omi/memories?limit=50",
+          "options": {}
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "get-stats",
+        "name": "Get Omi Stats",
+        "type": "n8n-nodes-base.httpRequest",
+        "disabled": false,
+        "position": [
+          470,
+          300
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:3100/api/v1/omi/stats",
+          "options": {}
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "merge-data",
+        "name": "Merge All Data",
+        "type": "n8n-nodes-base.merge",
+        "disabled": false,
+        "position": [
+          690,
+          300
+        ],
+        "parameters": {
+          "mode": "combine",
+          "options": {},
+          "combineBy": "combineAll"
+        },
+        "typeVersion": 3
+      },
+      {
+        "id": "build-digest",
+        "name": "Build Daily Digest",
+        "type": "n8n-nodes-base.code",
+        "disabled": false,
+        "position": [
+          910,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst today = new Date().toISOString().split('T')[0];\n\n// Filter for today's data\nconst conversations = (items[0]?.json || []).filter(c => \n  c.started_at && c.started_at.startsWith(today)\n);\nconst memories = (items[1]?.json || []).filter(m => \n  m.created_at && m.created_at.startsWith(today)\n);\nconst stats = items[2]?.json || {};\n\nconst totalMinutes = conversations.reduce((sum, c) => \n  sum + (c.duration_seconds || 0) / 60, 0\n);\n\nreturn [{\n  json: {\n    date: today,\n    conversation_count: conversations.length,\n    memory_count: memories.length,\n    total_recording_minutes: Math.round(totalMinutes),\n    conversations: conversations.slice(0, 10).map(c => ({\n      time: c.started_at,\n      duration: c.duration_seconds,\n      summary: c.summary\n    })),\n    memories: memories.slice(0, 10).map(m => ({\n      content: m.content,\n      category: m.category\n    })),\n    overall_stats: stats\n  }\n}];"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "generate-summary",
+        "name": "AI Daily Summary",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "disabled": false,
+        "position": [
+          1130,
+          300
+        ],
+        "parameters": {
+          "model": "gpt-4o-mini",
+          "options": {
+            "temperature": 0.7
+          },
+          "messages": {
+            "values": [
+              {
+                "content": "={{ `Create a friendly daily summary for Will based on his Omi wearable data:\n\nDate: ${$json.date}\nConversations recorded: ${$json.conversation_count}\nMemories captured: ${$json.memory_count}\nTotal recording time: ${$json.total_recording_minutes} minutes\n\nConversation summaries:\n${JSON.stringify($json.conversations, null, 2)}\n\nMemories:\n${JSON.stringify($json.memories, null, 2)}\n\nWrite a brief, personal daily recap (3-5 sentences) highlighting key moments and any notable patterns. Be conversational and warm.` }}"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "openai-creds",
+            "name": "OpenAI"
+          }
+        },
+        "typeVersion": 1.4
+      },
+      {
+        "id": "save-digest",
+        "name": "Save to BRAIN",
+        "type": "n8n-nodes-base.httpRequest",
+        "disabled": false,
+        "position": [
+          1350,
+          300
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:3100/api/v1/notes",
+          "method": "POST",
+          "options": {},
+          "jsonBody": "={{ ({\n  title: `Daily Omi Digest - ${$node[\"Build Daily Digest\"].json.date}` ,\n  content: $json.text,\n  tags: [\"omi\", \"daily-digest\", \"auto-generated\"],\n  source: \"n8n-omi-digest\",\n  metadata: {\n    conversations: $node[\"Build Daily Digest\"].json.conversation_count,\n    memories: $node[\"Build Daily Digest\"].json.memory_count,\n    minutes: $node[\"Build Daily Digest\"].json.total_recording_minutes,\n  },\n}) }}",
+          "sendBody": true,
+          "specifyBody": "json"
+        },
+        "typeVersion": 4.2
+      }
+    ],
+    "connections": {
+      "Daily at 8 PM": {
+        "main": [
+          [
+            {
+              "node": "Get Today Conversations",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Get Today Memories",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Get Omi Stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Today Conversations": {
+        "main": [
+          [
+            {
+              "node": "Merge All Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Today Memories": {
+        "main": [
+          [
+            {
+              "node": "Merge All Data",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Get Omi Stats": {
+        "main": [
+          [
+            {
+              "node": "Merge All Data",
+              "type": "main",
+              "index": 2
+            }
+          ]
+        ]
+      },
+      "Merge All Data": {
+        "main": [
+          [
+            {
+              "node": "Build Daily Digest",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Daily Digest": {
+        "main": [
+          [
+            {
+              "node": "AI Daily Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Daily Summary": {
+        "main": [
+          [
+            {
+              "node": "Save to BRAIN",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Will Sigmon",
+    "name": null,
+    "description": null,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2025-12-12T12:49:47.909Z",
+        "id": 198,
+        "workflowId": "LD4Y6ebDt19XUTHi",
+        "versionId": "4e961760-a839-48f1-b3dc-2f3b04326896",
+        "event": "activated",
+        "userId": "9078fa56-adda-4039-a803-770525ee1139"
+      }
+    ]
+  }
+}

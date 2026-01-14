@@ -1,0 +1,56 @@
+{
+  "name": "Dotfiles Hub Auto-Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "hours", "hoursInterval": 1}]
+        }
+      },
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "command": "cd ~/.dotfiles-hub && git pull origin main 2>&1"
+      },
+      "name": "Git Pull",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "command": "cd ~/.dotfiles-hub && git status --porcelain"
+      },
+      "name": "Check Changes",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [{"value1": "={{ $json.stdout }}", "operation": "isNotEmpty"}]
+        }
+      },
+      "name": "Has Changes?",
+      "type": "n8n-nodes-base.if",
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "command": "cd ~/.dotfiles-hub && git add -A && git commit -m 'Auto-sync $(date +%Y-%m-%d_%H:%M)' && git push origin main 2>&1"
+      },
+      "name": "Git Push",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [1050, 200]
+    }
+  ],
+  "connections": {
+    "Every Hour": {"main": [[{"node": "Git Pull", "type": "main", "index": 0}]]},
+    "Git Pull": {"main": [[{"node": "Check Changes", "type": "main", "index": 0}]]},
+    "Check Changes": {"main": [[{"node": "Has Changes?", "type": "main", "index": 0}]]},
+    "Has Changes?": {"main": [[{"node": "Git Push", "type": "main", "index": 0}], []]}
+  },
+  "settings": {"executionOrder": "v1"}
+}

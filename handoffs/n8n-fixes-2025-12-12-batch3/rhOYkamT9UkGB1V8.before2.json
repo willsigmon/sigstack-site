@@ -1,0 +1,454 @@
+{
+  "updatedAt": "2025-12-12T17:59:33.880Z",
+  "createdAt": "2025-12-06T23:19:39.478Z",
+  "id": "rhOYkamT9UkGB1V8",
+  "name": "BRAIN Idea Capture",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "raz/idea",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook_trigger",
+      "name": "Idea Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        250,
+        300
+      ],
+      "webhookId": "raz-idea-capture"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'claude-3-5-haiku-20241022', max_tokens: 500, messages: [{ role: 'user', content: `Extract and categorize this idea from Will. Return JSON only, no explanation:\n\nInput: \"${$json.body.message}\"\n\nReturn format:\n{\n  \"idea\": \"the core idea in one clear sentence\",\n  \"category\": \"one of: product, business, personal, tech, creative, life\",\n  \"priority\": \"one of: urgent, important, someday\",\n  \"related_to\": \"any related projects or topics mentioned, or null\",\n  \"raw_input\": \"original message\",\n  \"captured_at\": \"${new Date().toISOString()}\"\n}` }] }) }}",
+        "options": {}
+      },
+      "id": "claude_extract",
+      "name": "Claude Extract Idea",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "MgMquSydXonNOTEi",
+          "name": "Anthropic API (x-api-key)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Claude's response and extract the idea JSON\nconst response = $input.first().json;\nconst content = response.content[0].text;\n\n// Try to parse the JSON from Claude's response\nlet idea;\ntry {\n  // Handle if Claude wrapped it in markdown code blocks\n  const jsonMatch = content.match(/```json?\\n?([\\s\\S]*?)\\n?```/) || [null, content];\n  idea = JSON.parse(jsonMatch[1] || content);\n} catch (e) {\n  idea = {\n    idea: content,\n    category: 'uncategorized',\n    priority: 'someday',\n    related_to: null,\n    raw_input: $('Idea Webhook').first().json.body.message,\n    captured_at: new Date().toISOString(),\n    parse_error: true\n  };\n}\n\n// Add metadata\nidea.id = `idea_${Date.now()}`;\nidea.source = $('Idea Webhook').first().json.body.source || 'cli';\nidea.user = $('Idea Webhook').first().json.body.user || 'will';\n\nreturn [{ json: idea }];"
+      },
+      "id": "parse_idea",
+      "name": "Parse Idea",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        750,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.1.139:3100/api/v1/notes",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: $json.idea, content: JSON.stringify($json, null, 2), category: $json.category, metadata: { priority: $json.priority, related_to: $json.related_to, source: $json.source } }) }}",
+        "options": {}
+      },
+      "id": "store_wsiglog",
+      "name": "Store in wsiglog",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1000,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "={{ $json.idea }}",
+        "options": {}
+      },
+      "id": "set_response",
+      "name": "Set Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1000,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'captured', idea: $('Parse Idea').first().json.idea, category: $('Parse Idea').first().json.category }) }}",
+        "options": {}
+      },
+      "id": "respond_webhook",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1250,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Idea Webhook": {
+      "main": [
+        [
+          {
+            "node": "Claude Extract Idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Extract Idea": {
+      "main": [
+        [
+          {
+            "node": "Parse Idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Idea": {
+      "main": [
+        [
+          {
+            "node": "Store in wsiglog",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store in wsiglog": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Response": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "5c2de362-7fb6-44ad-af57-51c7051b3c92",
+  "activeVersionId": "5c2de362-7fb6-44ad-af57-51c7051b3c92",
+  "versionCounter": 99,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-06T23:19:39.478Z",
+      "createdAt": "2025-12-06T23:19:39.478Z",
+      "role": "workflow:owner",
+      "workflowId": "rhOYkamT9UkGB1V8",
+      "projectId": "MNkFznuFO8b8N585",
+      "project": {
+        "updatedAt": "2025-12-02T22:38:20.973Z",
+        "createdAt": "2025-12-02T20:47:48.956Z",
+        "id": "MNkFznuFO8b8N585",
+        "name": "Will Sigmon <wjsigmon@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-02T20:47:48.956Z",
+            "createdAt": "2025-12-02T20:47:48.956Z",
+            "userId": "9078fa56-adda-4039-a803-770525ee1139",
+            "projectId": "MNkFznuFO8b8N585",
+            "user": {
+              "updatedAt": "2025-12-12T17:31:38.271Z",
+              "createdAt": "2025-12-02T20:47:47.777Z",
+              "id": "9078fa56-adda-4039-a803-770525ee1139",
+              "email": "wjsigmon@gmail.com",
+              "firstName": "Will",
+              "lastName": "Sigmon",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-02T22:38:24.407Z",
+                "personalization_survey_n8n_version": "1.122.4"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "lQ4cSakXgWIh08Iw",
+                "userActivatedAt": 1764759620031,
+                "easyAIWorkflowOnboarded": true,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1765210322440
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-12-12",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2025-12-12T17:59:33.881Z",
+    "createdAt": "2025-12-12T17:59:33.881Z",
+    "versionId": "5c2de362-7fb6-44ad-af57-51c7051b3c92",
+    "workflowId": "rhOYkamT9UkGB1V8",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "raz/idea",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "webhook_trigger",
+        "name": "Idea Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          250,
+          300
+        ],
+        "webhookId": "raz-idea-capture"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.anthropic.com/v1/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "anthropic-version",
+                "value": "2023-06-01"
+              },
+              {
+                "name": "content-type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ model: 'claude-3-5-haiku-20241022', max_tokens: 500, messages: [{ role: 'user', content: `Extract and categorize this idea from Will. Return JSON only, no explanation:\n\nInput: \"${$json.body.message}\"\n\nReturn format:\n{\n  \"idea\": \"the core idea in one clear sentence\",\n  \"category\": \"one of: product, business, personal, tech, creative, life\",\n  \"priority\": \"one of: urgent, important, someday\",\n  \"related_to\": \"any related projects or topics mentioned, or null\",\n  \"raw_input\": \"original message\",\n  \"captured_at\": \"${new Date().toISOString()}\"\n}` }] }) }}",
+          "options": {}
+        },
+        "id": "claude_extract",
+        "name": "Claude Extract Idea",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          500,
+          300
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "MgMquSydXonNOTEi",
+            "name": "Anthropic API (x-api-key)"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Parse Claude's response and extract the idea JSON\nconst response = $input.first().json;\nconst content = response.content[0].text;\n\n// Try to parse the JSON from Claude's response\nlet idea;\ntry {\n  // Handle if Claude wrapped it in markdown code blocks\n  const jsonMatch = content.match(/```json?\\n?([\\s\\S]*?)\\n?```/) || [null, content];\n  idea = JSON.parse(jsonMatch[1] || content);\n} catch (e) {\n  idea = {\n    idea: content,\n    category: 'uncategorized',\n    priority: 'someday',\n    related_to: null,\n    raw_input: $('Idea Webhook').first().json.body.message,\n    captured_at: new Date().toISOString(),\n    parse_error: true\n  };\n}\n\n// Add metadata\nidea.id = `idea_${Date.now()}`;\nidea.source = $('Idea Webhook').first().json.body.source || 'cli';\nidea.user = $('Idea Webhook').first().json.body.user || 'will';\n\nreturn [{ json: idea }];"
+        },
+        "id": "parse_idea",
+        "name": "Parse Idea",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          750,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://192.168.1.139:3100/api/v1/notes",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ title: $json.idea, content: JSON.stringify($json, null, 2), category: $json.category, metadata: { priority: $json.priority, related_to: $json.related_to, source: $json.source } }) }}",
+          "options": {}
+        },
+        "id": "store_wsiglog",
+        "name": "Store in wsiglog",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1000,
+          200
+        ]
+      },
+      {
+        "parameters": {
+          "content": "={{ $json.idea }}",
+          "options": {}
+        },
+        "id": "set_response",
+        "name": "Set Response",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1000,
+          400
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ JSON.stringify({ status: 'captured', idea: $('Parse Idea').first().json.idea, category: $('Parse Idea').first().json.category }) }}",
+          "options": {}
+        },
+        "id": "respond_webhook",
+        "name": "Respond",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          1250,
+          300
+        ]
+      }
+    ],
+    "connections": {
+      "Idea Webhook": {
+        "main": [
+          [
+            {
+              "node": "Claude Extract Idea",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Claude Extract Idea": {
+        "main": [
+          [
+            {
+              "node": "Parse Idea",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Idea": {
+        "main": [
+          [
+            {
+              "node": "Store in wsiglog",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Set Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Store in wsiglog": {
+        "main": [
+          [
+            {
+              "node": "Respond",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Response": {
+        "main": [
+          [
+            {
+              "node": "Respond",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Will Sigmon",
+    "name": null,
+    "description": null,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2025-12-12T18:01:01.515Z",
+        "id": 246,
+        "workflowId": "rhOYkamT9UkGB1V8",
+        "versionId": "5c2de362-7fb6-44ad-af57-51c7051b3c92",
+        "event": "activated",
+        "userId": "9078fa56-adda-4039-a803-770525ee1139"
+      }
+    ]
+  }
+}

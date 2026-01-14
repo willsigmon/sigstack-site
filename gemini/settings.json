@@ -1,0 +1,52 @@
+{
+  "security": {
+    "auth": {
+      "selectedType": "oauth-personal"
+    },
+    "folderTrust": {
+      "enabled": false
+    }
+  },
+  "ui": {
+    "theme": "Atom One",
+    "showStatusInTitle": true,
+    "hideTips": true,
+    "hideContextSummary": false,
+    "footer": {
+      "hideContextPercentage": false,
+      "hideSandboxStatus": true
+    },
+    "hideFooter": true,
+    "useFullWidth": false
+  },
+  "general": {
+    "sessionRetention": {
+      "enabled": true
+    },
+    "enablePromptCompletion": true,
+    "previewFeatures": true,
+    "vimMode": false
+  },
+  "output": {
+    "format": "text"
+  },
+  "tools": {
+    "shell": {
+      "showColor": true
+    },
+    "autoAccept": true
+  },
+  "context": {
+    "loadMemoryFromIncludeDirectories": true,
+    "fileFiltering": {
+      "respectGitIgnore": false,
+      "respectGeminiIgnore": false
+    }
+  },
+  "experimental": {
+    "useModelRouter": false
+  },
+  "core": {
+    "model": "gemini-3-pro-preview"
+  }
+}

@@ -1,0 +1,806 @@
+{
+  "updatedAt": "2025-12-12T19:25:56.586Z",
+  "createdAt": "2025-12-05T09:26:52.552Z",
+  "id": "vZ7F2N2vSWzTOzMw",
+  "name": "Master Daily Rollup - Central Life Hub",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "fc47bcc5-a583-4222-8f55-8c1543974244",
+      "name": "Daily 11:30 PM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 23,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "typeVersion": 1.3
+    },
+    {
+      "id": "2b2153b8-e9b3-4d6b-9fa7-2ecf77c6851c",
+      "name": "Get Day Synthesis",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "url": "={{ 'http://192.168.1.139:3102/synthesize/' + $now.toISODate() }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "typeVersion": 4.3,
+      "continueOnFail": true,
+      "disabled": true
+    },
+    {
+      "id": "51cf40f6-75a6-415f-a423-c7815c3501cf",
+      "name": "Get Conversations",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        220,
+        150
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3102/conversations",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "typeVersion": 4.3,
+      "continueOnFail": true
+    },
+    {
+      "id": "282722d8-d2c0-4641-8134-0e7eba9c1c4a",
+      "name": "Get Health",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3102/health",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "typeVersion": 4.3,
+      "continueOnFail": true
+    },
+    {
+      "id": "f4cbdb4c-46ba-437f-8e36-fcfd90547642",
+      "name": "Get Calendar",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        220,
+        450
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3102/calendar",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "typeVersion": 4.3,
+      "continueOnFail": true
+    },
+    {
+      "id": "93c6d9ba-e228-4226-9016-973c568368c0",
+      "name": "Get Patterns",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        220,
+        600
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3102/patterns",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "typeVersion": 4.3,
+      "continueOnFail": true
+    },
+    {
+      "id": "7450a93f-24ce-4531-af65-5e9f5d9e5fe0",
+      "name": "Get Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        220,
+        750
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3102/stats",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "typeVersion": 4.3,
+      "continueOnFail": true
+    },
+    {
+      "id": "b58f7511-8390-44c1-a3f7-1e9a4c51c371",
+      "name": "Get GitHub",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        220,
+        900
+      ],
+      "parameters": {
+        "url": "https://api.github.com/users/willsigmon/events?per_page=30",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "typeVersion": 4.3,
+      "continueOnFail": true
+    },
+    {
+      "id": "dd8cd1f7-e425-46f5-ab1b-16c121ab3727",
+      "name": "Get Plex",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        220,
+        1050
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:8181/api/v2?apikey=1d7faea9e4e442989154d1f37c4d1055&cmd=get_history&length=20",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "typeVersion": 4.3,
+      "continueOnFail": true
+    },
+    {
+      "id": "7d535574-f914-4a68-8edd-a2c80a715a1d",
+      "name": "Build Master Rollup",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        500,
+        450
+      ],
+      "parameters": {
+        "jsCode": "// Aggregate all data sources into unified rollup (best-effort)\nconst today = $now.toISODate();\n\nconst safeFirstJson = (nodeName, fallback) => {\n  try {\n    const value = $(nodeName).first().json;\n    return (value === undefined || value === null) ? fallback : value;\n  } catch {\n    return fallback;\n  }\n};\n\nconst safeFirstJsonArray = (nodeName) => {\n  const value = safeFirstJson(nodeName, []);\n  if (Array.isArray(value)) return value;\n  // n8n may wrap arrays into items; fallback to empty\n  return [];\n};\n\nconst synthesis = safeFirstJson('Get Day Synthesis', {});\nconst conversations = safeFirstJsonArray('Get Conversations');\nconst health = safeFirstJson('Get Health', {});\nconst calendar = safeFirstJsonArray('Get Calendar');\nconst patterns = safeFirstJson('Get Patterns', {});\nconst stats = safeFirstJson('Get Stats', {});\nconst github = safeFirstJsonArray('Get GitHub');\nconst plexResponse = safeFirstJson('Get Plex', {});\nconst plex = plexResponse?.response?.data?.data;\n\n// Filter to today's data\nconst todayConvos = conversations.filter(c => c?.started_at?.startsWith?.(today));\nconst todayEvents = calendar.filter(e => e?.start?.startsWith?.(today));\nconst todayGithub = github.filter(e => e?.created_at?.startsWith?.(today));\nconst todayPlex = Array.isArray(plex)\n  ? plex.filter(p => {\n      try {\n        const started = new Date(p.started * 1000).toISOString().split('T')[0];\n        return started === today;\n      } catch {\n        return false;\n      }\n    })\n  : [];\n\n// Calculate metrics\nconst commits = todayGithub\n  .filter(e => e?.type === 'PushEvent')\n  .reduce((a, p) => a + (p?.payload?.commits?.length || 0), 0);\n\nconst watchTime = Math.round(todayPlex.reduce((a, p) => a + (p?.duration || 0), 0) / 60);\n\nconst rollup = {\n  date: today,\n  timestamp: $now.toISO(),\n\n  conversations: {\n    count: todayConvos.length,\n    people: [...new Set(todayConvos.flatMap(c => Array.isArray(c.people) ? c.people : []))],\n    topics: todayConvos.map(c => c.title || c.summary || 'untitled').slice(0, 5)\n  },\n\n  health: {\n    steps: health.steps || 0,\n    sleep_hours: health.sleep?.duration ? Math.round(health.sleep.duration / 3600 * 10) / 10 : null,\n    heart_rate: health.heart_rate?.avg || null,\n    energy_level: health.energy || synthesis.energy_level || null\n  },\n\n  calendar: {\n    event_count: todayEvents.length,\n    events: todayEvents.map(e => e.title || e.summary).slice(0, 5)\n  },\n\n  productivity: {\n    github_commits: commits,\n    github_events: todayGithub.length,\n    active_repos: [...new Set(todayGithub.map(e => e.repo?.name).filter(Boolean))]\n  },\n\n  entertainment: {\n    plex_items: todayPlex.length,\n    watch_minutes: watchTime,\n    watched: todayPlex.map(p => p.full_title || p.title).slice(0, 5)\n  },\n\n  patterns: patterns.patterns || patterns,\n  synthesis,\n  totals: stats,\n};\n\nreturn [{ json: rollup }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "16695550-b3ce-469d-80be-111d5465d08c",
+      "name": "AI Daily Summary",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        750,
+        450
+      ],
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {
+          "maxTokens": 800
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are Will's personal life analyst. Create a concise but comprehensive daily summary that captures the essence of the day - energy, productivity, relationships, and insights. Be direct and actionable."
+            },
+            {
+              "role": "user",
+              "content": "={{ `Create my daily life rollup summary for ${$json.date}:\n\n${JSON.stringify($json, null, 2)}\n\nProvide:\n1. 📊 Day at a glance (one sentence capturing the day's energy)\n2. 💬 Communication highlights (who, what themes)\n3. ⚡ Productivity score and what got done\n4. ❤️ Health snapshot\n5. 🎬 Downtime (what I watched/consumed)\n6. 💡 One insight or pattern noticed\n7. 🎯 One thing to carry into tomorrow` }}"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "78Hk3U0UVtw5EYmz",
+          "name": "OpenAI API"
+        }
+      },
+      "typeVersion": 1.3,
+      "disabled": true
+    },
+    {
+      "id": "ce3a71cd-e8a0-43aa-8916-fbe3199b04ac",
+      "name": "Store in wsiglog",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1000,
+        350
+      ],
+      "parameters": {
+        "url": "http://192.168.1.139:3100/api/v1/notes",
+        "method": "POST",
+        "options": {
+          "timeout": 120000
+        },
+        "jsonBody": "={{ ({ title: \"Daily Rollup - \" + $node[\"Build Master Rollup\"].json.date, content: JSON.stringify($node[\"Build Master Rollup\"].json, null, 2), tags: [\"daily-rollup\", \"auto\"], source: \"n8n-daily-rollup\", metadata: { date: $node[\"Build Master Rollup\"].json.date } }) }}",
+        "sendBody": true,
+        "specifyBody": "json"
+      },
+      "typeVersion": 4.3
+    },
+    {
+      "id": "93ce2e37-bf30-4551-a7e9-cce7af0fc47f",
+      "name": "Post to Craft",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1000,
+        550
+      ],
+      "parameters": {
+        "url": "https://connect.craft.do/links/HquFFKSHGEn/api/v1/blocks",
+        "method": "POST",
+        "jsonBody": "={{ ({ markdown: \"## 📋 Daily Rollup - \" + $node[\"Build Master Rollup\"].json.date + \"\\n\\n(AI summary temporarily disabled — rollup stored.)\\n\\n---\\n\\n<details>\\n<summary>Raw Data</summary>\\n\\n```json\\n\" + JSON.stringify($node[\"Build Master Rollup\"].json, null, 2).slice(0, 2000) + \"\\n```\\n</details>\\n\\n---\", position: { position: \"start\", pageId: \"5ae59b55-1423-4a6b-8665-64a1dd9fb3a1\" }}) }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nJMFTi5wTzZDRg1h",
+          "name": "Header Auth account"
+        }
+      },
+      "typeVersion": 4.3,
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Daily 11:30 PM": {
+      "main": [
+        [
+          {
+            "node": "Get Conversations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conversations": {
+      "main": [
+        [
+          {
+            "node": "Get Health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Health": {
+      "main": [
+        [
+          {
+            "node": "Get Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Calendar": {
+      "main": [
+        [
+          {
+            "node": "Get Patterns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Patterns": {
+      "main": [
+        [
+          {
+            "node": "Get Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Stats": {
+      "main": [
+        [
+          {
+            "node": "Get GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get GitHub": {
+      "main": [
+        [
+          {
+            "node": "Get Plex",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Plex": {
+      "main": [
+        [
+          {
+            "node": "Build Master Rollup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Master Rollup": {
+      "main": [
+        [
+          {
+            "node": "Store in wsiglog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Daily 11:30 PM": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "versionId": "02cbb05a-21a6-4d4a-8b11-d7fc8831e583",
+  "activeVersionId": "02cbb05a-21a6-4d4a-8b11-d7fc8831e583",
+  "versionCounter": 265,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-05T09:26:52.552Z",
+      "createdAt": "2025-12-05T09:26:52.552Z",
+      "role": "workflow:owner",
+      "workflowId": "vZ7F2N2vSWzTOzMw",
+      "projectId": "MNkFznuFO8b8N585",
+      "project": {
+        "updatedAt": "2025-12-02T22:38:20.973Z",
+        "createdAt": "2025-12-02T20:47:48.956Z",
+        "id": "MNkFznuFO8b8N585",
+        "name": "Will Sigmon <wjsigmon@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-02T20:47:48.956Z",
+            "createdAt": "2025-12-02T20:47:48.956Z",
+            "userId": "9078fa56-adda-4039-a803-770525ee1139",
+            "projectId": "MNkFznuFO8b8N585",
+            "user": {
+              "updatedAt": "2025-12-12T17:31:38.271Z",
+              "createdAt": "2025-12-02T20:47:47.777Z",
+              "id": "9078fa56-adda-4039-a803-770525ee1139",
+              "email": "wjsigmon@gmail.com",
+              "firstName": "Will",
+              "lastName": "Sigmon",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-02T22:38:24.407Z",
+                "personalization_survey_n8n_version": "1.122.4"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "lQ4cSakXgWIh08Iw",
+                "userActivatedAt": 1764759620031,
+                "easyAIWorkflowOnboarded": true,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1765210322440
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-12-12",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2025-12-12T19:25:56.589Z",
+    "createdAt": "2025-12-12T19:25:56.589Z",
+    "versionId": "02cbb05a-21a6-4d4a-8b11-d7fc8831e583",
+    "workflowId": "vZ7F2N2vSWzTOzMw",
+    "nodes": [
+      {
+        "id": "fc47bcc5-a583-4222-8f55-8c1543974244",
+        "name": "Daily 11:30 PM",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "position": [
+          0,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 23,
+                "triggerAtMinute": 30
+              }
+            ]
+          }
+        },
+        "typeVersion": 1.3
+      },
+      {
+        "id": "2b2153b8-e9b3-4d6b-9fa7-2ecf77c6851c",
+        "name": "Get Day Synthesis",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          220,
+          0
+        ],
+        "parameters": {
+          "url": "={{ 'http://192.168.1.139:3102/synthesize/' + $now.toISODate() }}",
+          "options": {
+            "timeout": 10000
+          }
+        },
+        "typeVersion": 4.3,
+        "continueOnFail": true,
+        "disabled": true
+      },
+      {
+        "id": "51cf40f6-75a6-415f-a423-c7815c3501cf",
+        "name": "Get Conversations",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          220,
+          150
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:3102/conversations",
+          "options": {
+            "timeout": 30000
+          }
+        },
+        "typeVersion": 4.3,
+        "continueOnFail": true
+      },
+      {
+        "id": "282722d8-d2c0-4641-8134-0e7eba9c1c4a",
+        "name": "Get Health",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          220,
+          300
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:3102/health",
+          "options": {
+            "timeout": 30000
+          }
+        },
+        "typeVersion": 4.3,
+        "continueOnFail": true
+      },
+      {
+        "id": "f4cbdb4c-46ba-437f-8e36-fcfd90547642",
+        "name": "Get Calendar",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          220,
+          450
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:3102/calendar",
+          "options": {
+            "timeout": 30000
+          }
+        },
+        "typeVersion": 4.3,
+        "continueOnFail": true
+      },
+      {
+        "id": "93c6d9ba-e228-4226-9016-973c568368c0",
+        "name": "Get Patterns",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          220,
+          600
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:3102/patterns",
+          "options": {
+            "timeout": 120000
+          }
+        },
+        "typeVersion": 4.3,
+        "continueOnFail": true
+      },
+      {
+        "id": "7450a93f-24ce-4531-af65-5e9f5d9e5fe0",
+        "name": "Get Stats",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          220,
+          750
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:3102/stats",
+          "options": {
+            "timeout": 30000
+          }
+        },
+        "typeVersion": 4.3,
+        "continueOnFail": true
+      },
+      {
+        "id": "b58f7511-8390-44c1-a3f7-1e9a4c51c371",
+        "name": "Get GitHub",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          220,
+          900
+        ],
+        "parameters": {
+          "url": "https://api.github.com/users/willsigmon/events?per_page=30",
+          "options": {
+            "timeout": 30000
+          }
+        },
+        "typeVersion": 4.3,
+        "continueOnFail": true
+      },
+      {
+        "id": "dd8cd1f7-e425-46f5-ab1b-16c121ab3727",
+        "name": "Get Plex",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          220,
+          1050
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:8181/api/v2?apikey=1d7faea9e4e442989154d1f37c4d1055&cmd=get_history&length=20",
+          "options": {
+            "timeout": 30000
+          }
+        },
+        "typeVersion": 4.3,
+        "continueOnFail": true
+      },
+      {
+        "id": "7d535574-f914-4a68-8edd-a2c80a715a1d",
+        "name": "Build Master Rollup",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          500,
+          450
+        ],
+        "parameters": {
+          "jsCode": "// Aggregate all data sources into unified rollup (best-effort)\nconst today = $now.toISODate();\n\nconst safeFirstJson = (nodeName, fallback) => {\n  try {\n    const value = $(nodeName).first().json;\n    return (value === undefined || value === null) ? fallback : value;\n  } catch {\n    return fallback;\n  }\n};\n\nconst safeFirstJsonArray = (nodeName) => {\n  const value = safeFirstJson(nodeName, []);\n  if (Array.isArray(value)) return value;\n  // n8n may wrap arrays into items; fallback to empty\n  return [];\n};\n\nconst synthesis = safeFirstJson('Get Day Synthesis', {});\nconst conversations = safeFirstJsonArray('Get Conversations');\nconst health = safeFirstJson('Get Health', {});\nconst calendar = safeFirstJsonArray('Get Calendar');\nconst patterns = safeFirstJson('Get Patterns', {});\nconst stats = safeFirstJson('Get Stats', {});\nconst github = safeFirstJsonArray('Get GitHub');\nconst plexResponse = safeFirstJson('Get Plex', {});\nconst plex = plexResponse?.response?.data?.data;\n\n// Filter to today's data\nconst todayConvos = conversations.filter(c => c?.started_at?.startsWith?.(today));\nconst todayEvents = calendar.filter(e => e?.start?.startsWith?.(today));\nconst todayGithub = github.filter(e => e?.created_at?.startsWith?.(today));\nconst todayPlex = Array.isArray(plex)\n  ? plex.filter(p => {\n      try {\n        const started = new Date(p.started * 1000).toISOString().split('T')[0];\n        return started === today;\n      } catch {\n        return false;\n      }\n    })\n  : [];\n\n// Calculate metrics\nconst commits = todayGithub\n  .filter(e => e?.type === 'PushEvent')\n  .reduce((a, p) => a + (p?.payload?.commits?.length || 0), 0);\n\nconst watchTime = Math.round(todayPlex.reduce((a, p) => a + (p?.duration || 0), 0) / 60);\n\nconst rollup = {\n  date: today,\n  timestamp: $now.toISO(),\n\n  conversations: {\n    count: todayConvos.length,\n    people: [...new Set(todayConvos.flatMap(c => Array.isArray(c.people) ? c.people : []))],\n    topics: todayConvos.map(c => c.title || c.summary || 'untitled').slice(0, 5)\n  },\n\n  health: {\n    steps: health.steps || 0,\n    sleep_hours: health.sleep?.duration ? Math.round(health.sleep.duration / 3600 * 10) / 10 : null,\n    heart_rate: health.heart_rate?.avg || null,\n    energy_level: health.energy || synthesis.energy_level || null\n  },\n\n  calendar: {\n    event_count: todayEvents.length,\n    events: todayEvents.map(e => e.title || e.summary).slice(0, 5)\n  },\n\n  productivity: {\n    github_commits: commits,\n    github_events: todayGithub.length,\n    active_repos: [...new Set(todayGithub.map(e => e.repo?.name).filter(Boolean))]\n  },\n\n  entertainment: {\n    plex_items: todayPlex.length,\n    watch_minutes: watchTime,\n    watched: todayPlex.map(p => p.full_title || p.title).slice(0, 5)\n  },\n\n  patterns: patterns.patterns || patterns,\n  synthesis,\n  totals: stats,\n};\n\nreturn [{ json: rollup }];"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "16695550-b3ce-469d-80be-111d5465d08c",
+        "name": "AI Daily Summary",
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "position": [
+          750,
+          450
+        ],
+        "parameters": {
+          "model": "gpt-4o-mini",
+          "options": {
+            "maxTokens": 800
+          },
+          "messages": {
+            "values": [
+              {
+                "role": "system",
+                "content": "You are Will's personal life analyst. Create a concise but comprehensive daily summary that captures the essence of the day - energy, productivity, relationships, and insights. Be direct and actionable."
+              },
+              {
+                "role": "user",
+                "content": "={{ `Create my daily life rollup summary for ${$json.date}:\n\n${JSON.stringify($json, null, 2)}\n\nProvide:\n1. 📊 Day at a glance (one sentence capturing the day's energy)\n2. 💬 Communication highlights (who, what themes)\n3. ⚡ Productivity score and what got done\n4. ❤️ Health snapshot\n5. 🎬 Downtime (what I watched/consumed)\n6. 💡 One insight or pattern noticed\n7. 🎯 One thing to carry into tomorrow` }}"
+              }
+            ]
+          }
+        },
+        "credentials": {
+          "openAiApi": {
+            "id": "78Hk3U0UVtw5EYmz",
+            "name": "OpenAI API"
+          }
+        },
+        "typeVersion": 1.3,
+        "disabled": true
+      },
+      {
+        "id": "ce3a71cd-e8a0-43aa-8916-fbe3199b04ac",
+        "name": "Store in wsiglog",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          1000,
+          350
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:3100/api/v1/notes",
+          "method": "POST",
+          "options": {
+            "timeout": 120000
+          },
+          "jsonBody": "={{ ({ title: \"Daily Rollup - \" + $node[\"Build Master Rollup\"].json.date, content: JSON.stringify($node[\"Build Master Rollup\"].json, null, 2), tags: [\"daily-rollup\", \"auto\"], source: \"n8n-daily-rollup\", metadata: { date: $node[\"Build Master Rollup\"].json.date } }) }}",
+          "sendBody": true,
+          "specifyBody": "json"
+        },
+        "typeVersion": 4.3
+      },
+      {
+        "id": "93ce2e37-bf30-4551-a7e9-cce7af0fc47f",
+        "name": "Post to Craft",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          1000,
+          550
+        ],
+        "parameters": {
+          "url": "https://connect.craft.do/links/HquFFKSHGEn/api/v1/blocks",
+          "method": "POST",
+          "jsonBody": "={{ ({ markdown: \"## 📋 Daily Rollup - \" + $node[\"Build Master Rollup\"].json.date + \"\\n\\n(AI summary temporarily disabled — rollup stored.)\\n\\n---\\n\\n<details>\\n<summary>Raw Data</summary>\\n\\n```json\\n\" + JSON.stringify($node[\"Build Master Rollup\"].json, null, 2).slice(0, 2000) + \"\\n```\\n</details>\\n\\n---\", position: { position: \"start\", pageId: \"5ae59b55-1423-4a6b-8665-64a1dd9fb3a1\" }}) }}",
+          "sendBody": true,
+          "specifyBody": "json",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth"
+        },
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "nJMFTi5wTzZDRg1h",
+            "name": "Header Auth account"
+          }
+        },
+        "typeVersion": 4.3,
+        "disabled": true
+      }
+    ],
+    "connections": {
+      "Daily 11:30 PM": {
+        "main": [
+          [
+            {
+              "node": "Get Conversations",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Conversations": {
+        "main": [
+          [
+            {
+              "node": "Get Health",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Health": {
+        "main": [
+          [
+            {
+              "node": "Get Calendar",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Calendar": {
+        "main": [
+          [
+            {
+              "node": "Get Patterns",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Patterns": {
+        "main": [
+          [
+            {
+              "node": "Get Stats",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Stats": {
+        "main": [
+          [
+            {
+              "node": "Get GitHub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get GitHub": {
+        "main": [
+          [
+            {
+              "node": "Get Plex",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Plex": {
+        "main": [
+          [
+            {
+              "node": "Build Master Rollup",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Master Rollup": {
+        "main": [
+          [
+            {
+              "node": "Store in wsiglog",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Will Sigmon",
+    "name": null,
+    "description": null,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2025-12-12T19:25:56.689Z",
+        "id": 334,
+        "workflowId": "vZ7F2N2vSWzTOzMw",
+        "versionId": "02cbb05a-21a6-4d4a-8b11-d7fc8831e583",
+        "event": "activated",
+        "userId": "9078fa56-adda-4039-a803-770525ee1139"
+      }
+    ]
+  }
+}

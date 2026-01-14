@@ -1,0 +1,79 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**/*)",
+      "Edit(**/*)",
+      "Git(*)",
+      "Bash(*)",
+      "git",
+      "bash"
+    ],
+    "deny": []
+  },
+  "temperature": 0.1,
+  "max_tokens": 4096,
+  "stream": true,
+  "thinking": {
+    "type": "enabled",
+    "budget_tokens": 32768
+  },
+  "tools": {
+    "mcp": {
+      "servers": [
+        "server-everything",
+        "mcp-server-filesystem",
+        "mcp-server-memory@latest",
+        "mcp-server-puppeteer",
+        "mcp-server-sequential-thinking",
+        "mcp-server-google-maps",
+        "mcp-server-github"
+      ]
+    }
+  },
+  "hooks": {
+    "matchers": [
+      {
+        "id": "simple-bash-logger",
+        "comment": "Log bash commands to file",
+        "pattern": {
+          "tool": "Bash"
+        },
+        "hooks": {
+          "preToolUse": {
+            "command": "mkdir -p ~/.claude/logs && echo \"[$(date)] Running: $(echo '$CLAUDE_HOOK_INPUT' | jq -r '.tool_input.command')\" >> ~/.claude/logs/commands.log"
+          }
+        }
+      },
+      {
+        "id": "git-notifier",
+        "comment": "Notify on git operations",
+        "pattern": {
+          "tool": "Bash",
+          "input": {
+            "command": "^git\\s+"
+          }
+        },
+        "hooks": {
+          "postToolUse": {
+            "command": "osascript -e 'display notification \"Git command completed\" with title \"Claude Code\"' 2>/dev/null || true"
+          }
+        }
+      },
+      {
+        "id": "python-formatter",
+        "comment": "Format Python files after edit",
+        "pattern": {
+          "tool": "Edit",
+          "input": {
+            "file_path": "\\.py$"
+          }
+        },
+        "hooks": {
+          "postToolUse": {
+            "command": "command -v black >/dev/null 2>&1 && black \"$(echo '$CLAUDE_HOOK_INPUT' | jq -r '.tool_input.file_path')\" --quiet 2>/dev/null || true"
+          }
+        }
+      }
+    ]
+  }
+}

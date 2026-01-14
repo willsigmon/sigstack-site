@@ -1,0 +1,175 @@
+[
+  {
+    "updatedAt": "2025-12-12T11:21:43.991Z",
+    "createdAt": "2025-12-10T20:46:08.239Z",
+    "id": "I3wgi4YWfC1KoozS",
+    "name": "BRAIN Location from HA Companion",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "id": "schedule",
+        "name": "Every 5 min",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "position": [
+          200,
+          300
+        ],
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "minutes",
+                "minutesInterval": 5
+              }
+            ]
+          }
+        },
+        "typeVersion": 1.2
+      },
+      {
+        "id": "fetch_ha",
+        "name": "Get Device Tracker",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [
+          420,
+          300
+        ],
+        "parameters": {
+          "url": "http://192.168.1.139:8124/api/states/device_tracker.wills_iphone_16_pro_max_2",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkYzZiNTIzY2QwYTI0NWIyODI2ZGFiMjU2NzgyYTEyMCIsImlhdCI6MTc2NTMwOTM1MSwiZXhwIjoyMDgwNjY5MzUxfQ.ye4OEDsMGw34tLewmFLo6KTzDBbk1Q2wzLleubsh1lw"
+              }
+            ]
+          }
+        },
+        "typeVersion": 4.2
+      },
+      {
+        "id": "extract",
+        "name": "Extract Location",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          640,
+          300
+        ],
+        "parameters": {
+          "jsCode": "const data = $input.first().json;\nconst attrs = data.attributes || {};\n\nif (!attrs.latitude || !attrs.longitude) {\n  return []; // Skip if no coords\n}\n\nreturn [{\n  json: {\n    lat: attrs.latitude,\n    lng: attrs.longitude,\n    accuracy: attrs.gps_accuracy || null,\n    altitude: attrs.altitude || null,\n    speed: attrs.speed || null,\n    battery: attrs.battery_level || null,\n    source: \"ha_companion\",\n    place_name: attrs.friendly_name || null\n  }\n}];"
+        },
+        "typeVersion": 2
+      },
+      {
+        "id": "store",
+        "name": "Store Location",
+        "type": "n8n-nodes-base.postgres",
+        "position": [
+          860,
+          300
+        ],
+        "parameters": {
+          "table": {
+            "__rl": true,
+            "mode": "list",
+            "value": "location_history"
+          },
+          "columns": {
+            "value": {
+              "lat": "={{ $json.lat }}",
+              "lng": "={{ $json.lng }}",
+              "speed": "={{ $json.speed }}",
+              "source": "={{ $json.source }}",
+              "battery": "={{ $json.battery }}",
+              "accuracy": "={{ $json.accuracy }}",
+              "altitude": "={{ $json.altitude }}",
+              "place_name": "={{ $json.place_name }}"
+            },
+            "mappingMode": "defineBelow"
+          },
+          "operation": "insert"
+        },
+        "credentials": {
+          "postgres": {
+            "id": "xdu7fsxoP9U4aQBA",
+            "name": "PostgreSQL wsiglog"
+          }
+        },
+        "typeVersion": 2.5
+      }
+    ],
+    "connections": {
+      "Every 5 min": {
+        "main": [
+          [
+            {
+              "node": "Get Device Tracker",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Device Tracker": {
+        "main": [
+          [
+            {
+              "node": "Extract Location",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Location": {
+        "main": [
+          [
+            {
+              "node": "Store Location",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "callerPolicy": "workflowsFromSameOwner",
+      "availableInMCP": false
+    },
+    "staticData": {
+      "node:Every 5 min": {
+        "recurrenceRules": []
+      }
+    },
+    "meta": null,
+    "pinData": null,
+    "versionId": "a55d9f44-b43f-4d50-a8f5-8e351b131dda",
+    "activeVersionId": null,
+    "versionCounter": 35,
+    "triggerCount": 1,
+    "tags": [],
+    "shared": [
+      {
+        "updatedAt": "2025-12-10T20:46:08.239Z",
+        "createdAt": "2025-12-10T20:46:08.239Z",
+        "role": "workflow:owner",
+        "workflowId": "I3wgi4YWfC1KoozS",
+        "projectId": "MNkFznuFO8b8N585",
+        "project": {
+          "updatedAt": "2025-12-02T22:38:20.973Z",
+          "createdAt": "2025-12-02T20:47:48.956Z",
+          "id": "MNkFznuFO8b8N585",
+          "name": "Will Sigmon <wjsigmon@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null
+        }
+      }
+    ]
+  }
+]
