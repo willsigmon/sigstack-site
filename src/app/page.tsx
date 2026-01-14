@@ -522,7 +522,7 @@ function StackingTitle({ onComplete }: { onComplete: () => void }) {
                       scale: 1,
                     }
                   : {
-                      y: 0, // Final position
+                      y: -24, // Final position - raised to show descenders
                       x: finalX,
                       opacity: 1,
                       rotate: 0,
@@ -533,22 +533,22 @@ function StackingTitle({ onComplete }: { onComplete: () => void }) {
                 phase === "falling"
                   ? {
                       type: "spring",
-                      stiffness: 60,
-                      damping: 18,
+                      stiffness: 50,
+                      damping: 15,
                       delay: i * 0.04,
                     }
                   : phase === "stacking"
                   ? {
                       type: "spring",
-                      stiffness: 80,
-                      damping: 22,
+                      stiffness: 70,
+                      damping: 20,
                       delay: i * 0.02,
                     }
                   : {
                       type: "tween",
-                      duration: 0.6,
-                      ease: [0.25, 0.1, 0.25, 1], // Smooth ease-out
-                      delay: i * 0.03,
+                      duration: 0.7,
+                      ease: [0.16, 1, 0.3, 1], // easeOutExpo - very smooth deceleration
+                      delay: i * 0.025,
                     }
               }
             >
