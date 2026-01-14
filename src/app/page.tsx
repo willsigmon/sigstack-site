@@ -2,52 +2,7 @@
 
 import Link from "next/link";
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
-
-// Floating particles component
-function FloatingParticles() {
-  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number; duration: number; delay: number }>>([]);
-
-  useEffect(() => {
-    const newParticles = Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 4 + 1,
-      duration: Math.random() * 20 + 10,
-      delay: Math.random() * 5,
-    }));
-    setParticles(newParticles);
-  }, []);
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((particle) => (
-        <motion.div
-          key={particle.id}
-          className="absolute rounded-full bg-purple-500/30"
-          style={{
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-            width: particle.size,
-            height: particle.size,
-          }}
-          animate={{
-            y: [0, -30, 0],
-            opacity: [0.2, 0.6, 0.2],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: particle.duration,
-            repeat: Infinity,
-            delay: particle.delay,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-    </div>
-  );
-}
+import { useRef } from "react";
 
 // Magnetic button component
 function MagneticButton({ children, href, className }: { children: React.ReactNode; href: string; className?: string }) {
@@ -62,8 +17,8 @@ function MagneticButton({ children, href, className }: { children: React.ReactNo
     const rect = ref.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    x.set((e.clientX - centerX) * 0.2);
-    y.set((e.clientY - centerY) * 0.2);
+    x.set((e.clientX - centerX) * 0.15);
+    y.set((e.clientY - centerY) * 0.15);
   };
 
   const handleMouseLeave = () => {
@@ -80,61 +35,23 @@ function MagneticButton({ children, href, className }: { children: React.ReactNo
       style={{ x: springX, y: springY }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
     >
       {children}
     </motion.a>
   );
 }
 
-// 3D tilt card component
-function TiltCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const x = (e.clientX - centerX) / (rect.width / 2);
-    const y = (e.clientY - centerY) / (rect.height / 2);
-    setRotateX(-y * 10);
-    setRotateY(x * 10);
-  };
-
-  const handleMouseLeave = () => {
-    setRotateX(0);
-    setRotateY(0);
-  };
-
+// Simple fade-in component
+function FadeIn({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   return (
     <motion.div
-      ref={ref}
       className={className}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        transformStyle: "preserve-3d",
-        transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-      }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-// Scroll reveal component
-function ScrollReveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40, filter: "blur(10px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ duration: 0.8, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
-      viewport={{ once: true, margin: "-100px" }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay, ease: "easeOut" }}
+      viewport={{ once: true, margin: "-50px" }}
     >
       {children}
     </motion.div>
@@ -211,12 +128,6 @@ const mcpServers = [
   { name: "Puppeteer", purpose: "Browser automation" },
 ];
 
-const stats = [
-  { label: "Skills", value: "89", color: "from-blue-400 to-blue-600" },
-  { label: "Commands", value: "24", color: "from-green-400 to-green-600" },
-  { label: "MCP Servers", value: "15+", color: "from-purple-400 to-purple-600" },
-];
-
 function StackCard({
   name,
   description,
@@ -233,54 +144,80 @@ function StackCard({
   index: number;
 }) {
   return (
-    <ScrollReveal delay={index * 0.1}>
-      <TiltCard
-        className={`group glass rounded-xl p-5 transition-all cursor-pointer ${
-          highlight ? "glow-purple ring-1 ring-purple-500/30" : ""
+    <FadeIn delay={index * 0.05}>
+      <Link
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`group block rounded-xl p-5 transition-all duration-200 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.1] ${
+          highlight ? "ring-1 ring-purple-500/30" : ""
         }`}
       >
-        <Link href={url} target="_blank" rel="noopener noreferrer" className="block">
-          <div className="flex items-center gap-4">
-            <motion.div
-              className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-white/10 p-2"
-              whileHover={{ scale: 1.1, rotate: 5 }}
-            >
-              <img src={logo} alt={name} className="h-full w-full object-contain" />
-            </motion.div>
-            <div>
-              <h3 className="font-semibold text-white group-hover:text-blue-400 transition-colors">
-                {name}
-                {highlight && (
-                  <span className="ml-2 text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full">
-                    Core
-                  </span>
-                )}
-              </h3>
-              <p className="text-sm text-zinc-400">{description}</p>
-            </div>
+        <div className="flex items-center gap-4">
+          <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-white/10 p-2">
+            <img src={logo} alt={name} className="h-full w-full object-contain" />
           </div>
-          {/* Shimmer effect */}
-          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent rounded-xl" />
-        </Link>
-      </TiltCard>
-    </ScrollReveal>
+          <div>
+            <h3 className="font-medium text-white group-hover:text-purple-300 transition-colors">
+              {name}
+              {highlight && (
+                <span className="ml-2 text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full">
+                  Core
+                </span>
+              )}
+            </h3>
+            <p className="text-sm text-zinc-500">{description}</p>
+          </div>
+        </div>
+      </Link>
+    </FadeIn>
   );
 }
 
 function CodeBlock({ children }: { children: string }) {
   return (
     <motion.pre
-      className="code-block rounded-lg p-4 overflow-x-auto text-sm relative"
-      initial={{ opacity: 0, scale: 0.95 }}
-      whileInView={{ opacity: 1, scale: 1 }}
+      className="rounded-lg p-5 overflow-x-auto text-sm bg-[#111] border border-white/[0.06]"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
     >
-      <code className="text-green-400">{children}</code>
-      {/* Copy indicator glow */}
-      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/5 to-purple-500/0 pointer-events-none" />
+      <code className="text-purple-300">{children}</code>
     </motion.pre>
   );
 }
+
+// Section header icons as SVGs
+const SectionIcon = ({ type }: { type: "brain" | "voice" | "terminal" | "cloud" | "plug" }) => {
+  const icons = {
+    brain: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      </svg>
+    ),
+    voice: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+      </svg>
+    ),
+    terminal: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+    cloud: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+      </svg>
+    ),
+    plug: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+      </svg>
+    ),
+  };
+  return <span className="text-purple-400">{icons[type]}</span>;
+};
 
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -289,173 +226,120 @@ export default function Home() {
     offset: ["start start", "end start"],
   });
 
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 150]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
-  const bgY = useTransform(scrollYProgress, [0, 1], [0, -50]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] overflow-hidden">
-      {/* Hero with Parallax */}
-      <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Animated background layers */}
-        <motion.div className="absolute inset-0" style={{ y: bgY }}>
-          {/* Hero image from GLIF */}
-          <div
-            className="absolute inset-0 opacity-30"
-            style={{
-              backgroundImage: "url(https://res.cloudinary.com/dzkwltgyd/image/upload/v1768353671/glif-run-outputs/fa9caqoahgkcywutrwry.png)",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0a]/50 to-[#0a0a0a]" />
-        </motion.div>
-
-        {/* Floating orbs */}
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full filter blur-[120px]"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/20 rounded-full filter blur-[100px]"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-
-        <FloatingParticles />
+    <div className="min-h-screen bg-[#0a0a0a]">
+      {/* Hero */}
+      <section ref={heroRef} className="relative min-h-[90vh] flex items-center justify-center">
+        {/* Subtle gradient background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-purple-500/[0.03] via-transparent to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
+        </div>
 
         {/* Hero content */}
         <motion.div
-          className="relative z-10 mx-auto max-w-6xl px-6 text-center"
-          style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
+          className="relative z-10 mx-auto max-w-4xl px-6 text-center"
+          style={{ opacity: heroOpacity }}
         >
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-sm text-zinc-400 ring-1 ring-white/10 mb-8 backdrop-blur-sm"
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 rounded-full bg-white/[0.03] px-4 py-2 text-sm text-zinc-500 border border-white/[0.06] mb-8"
           >
-            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
             Open Source
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-6xl sm:text-8xl font-black tracking-tight mb-6"
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-5xl sm:text-7xl font-bold tracking-tight mb-6 text-white"
           >
-            <span className="bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent animate-gradient-text">
-              sigstack
-            </span>
+            sigstack
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl sm:text-2xl text-zinc-400 max-w-2xl mx-auto mb-4"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-lg sm:text-xl text-zinc-400 max-w-xl mx-auto mb-4"
           >
-            My personal <span className="text-white font-semibold">Claude Code stack</span> for shipping software with AI
+            My personal <span className="text-white">Claude Code stack</span> for shipping software with AI
           </motion.p>
 
           <motion.p
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-zinc-500 mb-10"
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-zinc-600 mb-12 text-sm"
           >
-            89 skills &bull; 24 commands &bull; iOS bundle + Apple&apos;s hidden docs &bull; Ready to clone
+            89 skills · 24 commands · iOS bundle + Apple&apos;s hidden docs · Ready to clone
           </motion.p>
 
-          {/* Animated stats */}
+          {/* Stats */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="flex justify-center gap-8 sm:gap-12 mb-12"
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex justify-center gap-12 mb-12"
           >
-            {stats.map((stat, i) => (
-              <motion.div
-                key={stat.label}
-                className="text-center"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 + i * 0.1 }}
-                whileHover={{ scale: 1.1 }}
-              >
-                <div className={`text-4xl sm:text-5xl font-black bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
-                  {stat.value}
-                </div>
-                <div className="text-sm text-zinc-500 mt-1">{stat.label}</div>
-              </motion.div>
+            {[
+              { label: "Skills", value: "89" },
+              { label: "Commands", value: "24" },
+              { label: "MCP Servers", value: "15+" },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div className="text-3xl font-bold text-white">{stat.value}</div>
+                <div className="text-xs text-zinc-600 mt-1">{stat.label}</div>
+              </div>
             ))}
           </motion.div>
 
           {/* CTA Buttons */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="flex flex-col sm:flex-row gap-3 justify-center"
           >
             <MagneticButton
               href="https://github.com/willsigmon/sigstack"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-8 py-3 text-black font-medium hover:bg-zinc-200 transition-colors"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-black font-medium hover:bg-zinc-100 transition-colors"
             >
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                 <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
               </svg>
               View on GitHub
             </MagneticButton>
-            <MagneticButton
+            <Link
               href="#quick-start"
-              className="inline-flex items-center justify-center rounded-full glass px-8 py-3 text-white font-medium hover:bg-white/10 transition-colors"
+              className="inline-flex items-center justify-center rounded-lg bg-white/[0.03] border border-white/[0.06] px-6 py-3 text-white font-medium hover:bg-white/[0.06] transition-colors"
             >
               Quick Start
-            </MagneticButton>
+            </Link>
           </motion.div>
-        </motion.div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <div className="w-6 h-10 rounded-full border-2 border-zinc-600 flex justify-center pt-2">
-            <motion.div
-              className="w-1.5 h-1.5 rounded-full bg-zinc-400"
-              animate={{ y: [0, 12, 0], opacity: [1, 0, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-          </div>
         </motion.div>
       </section>
 
       {/* The Stack */}
-      <section className="relative mx-auto max-w-6xl px-6 py-32">
-        <ScrollReveal>
-          <h2 className="text-4xl font-black text-white mb-2 text-center">The Stack</h2>
-          <p className="text-zinc-500 text-center mb-16">Tools that power the workflow</p>
-        </ScrollReveal>
+      <section className="mx-auto max-w-4xl px-6 py-24">
+        <FadeIn>
+          <h2 className="text-2xl font-bold text-white mb-1 text-center">The Stack</h2>
+          <p className="text-zinc-600 text-center text-sm mb-16">Tools that power the workflow</p>
+        </FadeIn>
 
         {/* Brain */}
-        <div className="mb-16">
-          <ScrollReveal>
-            <h3 className="text-lg font-semibold text-zinc-300 mb-6 flex items-center gap-2">
-              <span className="text-2xl">🧠</span> The Brain
+        <div className="mb-12">
+          <FadeIn>
+            <h3 className="text-sm font-medium text-zinc-400 mb-4 flex items-center gap-2">
+              <SectionIcon type="brain" /> The Brain
             </h3>
-          </ScrollReveal>
-          <div className="grid gap-4 sm:grid-cols-2">
+          </FadeIn>
+          <div className="grid gap-3 sm:grid-cols-2">
             {brainStack.map((item, i) => (
               <StackCard key={item.name} {...item} index={i} />
             ))}
@@ -463,13 +347,13 @@ export default function Home() {
         </div>
 
         {/* Voice */}
-        <div className="mb-16">
-          <ScrollReveal>
-            <h3 className="text-lg font-semibold text-zinc-300 mb-6 flex items-center gap-2">
-              <span className="text-2xl">🎤</span> Voice Input
+        <div className="mb-12">
+          <FadeIn>
+            <h3 className="text-sm font-medium text-zinc-400 mb-4 flex items-center gap-2">
+              <SectionIcon type="voice" /> Voice Input
             </h3>
-          </ScrollReveal>
-          <div className="grid gap-4 sm:grid-cols-2">
+          </FadeIn>
+          <div className="grid gap-3 sm:grid-cols-2">
             {voiceStack.map((item, i) => (
               <StackCard key={item.name} {...item} index={i} />
             ))}
@@ -477,13 +361,13 @@ export default function Home() {
         </div>
 
         {/* Terminal */}
-        <div className="mb-16">
-          <ScrollReveal>
-            <h3 className="text-lg font-semibold text-zinc-300 mb-6 flex items-center gap-2">
-              <span className="text-2xl">💻</span> Terminal
+        <div className="mb-12">
+          <FadeIn>
+            <h3 className="text-sm font-medium text-zinc-400 mb-4 flex items-center gap-2">
+              <SectionIcon type="terminal" /> Terminal
             </h3>
-          </ScrollReveal>
-          <div className="grid gap-4 sm:grid-cols-2">
+          </FadeIn>
+          <div className="grid gap-3 sm:grid-cols-2">
             {terminalStack.map((item, i) => (
               <StackCard key={item.name} {...item} index={i} />
             ))}
@@ -491,13 +375,13 @@ export default function Home() {
         </div>
 
         {/* Infrastructure */}
-        <div className="mb-16">
-          <ScrollReveal>
-            <h3 className="text-lg font-semibold text-zinc-300 mb-6 flex items-center gap-2">
-              <span className="text-2xl">☁️</span> Infrastructure
+        <div className="mb-12">
+          <FadeIn>
+            <h3 className="text-sm font-medium text-zinc-400 mb-4 flex items-center gap-2">
+              <SectionIcon type="cloud" /> Infrastructure
             </h3>
-          </ScrollReveal>
-          <div className="grid gap-4 sm:grid-cols-3">
+          </FadeIn>
+          <div className="grid gap-3 sm:grid-cols-3">
             {infraStack.map((item, i) => (
               <StackCard key={item.name} {...item} index={i} />
             ))}
@@ -505,227 +389,170 @@ export default function Home() {
         </div>
 
         {/* MCP Servers */}
-        <ScrollReveal>
-          <h3 className="text-lg font-semibold text-zinc-300 mb-6 flex items-center gap-2">
-            <span className="text-2xl">🔌</span> MCP Servers
+        <FadeIn>
+          <h3 className="text-sm font-medium text-zinc-400 mb-4 flex items-center gap-2">
+            <SectionIcon type="plug" /> MCP Servers
           </h3>
-        </ScrollReveal>
-        <ScrollReveal delay={0.2}>
-          <motion.div
-            className="glass rounded-xl p-6"
-            whileHover={{ scale: 1.01 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {mcpServers.map((server, i) => (
-                <motion.div
-                  key={server.name}
-                  className="flex items-center gap-3"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <motion.div
-                    className="h-2 w-2 rounded-full bg-green-500"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
-                  />
-                  <span className="text-white font-medium">{server.name}</span>
-                  <span className="text-zinc-500 text-sm">{server.purpose}</span>
-                </motion.div>
+        </FadeIn>
+        <FadeIn delay={0.1}>
+          <div className="rounded-xl p-5 bg-white/[0.03] border border-white/[0.06]">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {mcpServers.map((server) => (
+                <div key={server.name} className="flex items-center gap-3">
+                  <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                  <span className="text-white text-sm">{server.name}</span>
+                  <span className="text-zinc-600 text-xs">{server.purpose}</span>
+                </div>
               ))}
             </div>
-          </motion.div>
-        </ScrollReveal>
+          </div>
+        </FadeIn>
       </section>
 
       {/* Quick Start */}
-      <section id="quick-start" className="relative mx-auto max-w-6xl px-6 py-32">
-        {/* Background glow */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-[600px] h-[400px] bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-full filter blur-[100px]" />
-        </div>
+      <section id="quick-start" className="mx-auto max-w-4xl px-6 py-24">
+        <FadeIn>
+          <h2 className="text-2xl font-bold text-white mb-1 text-center">Quick Start</h2>
+          <p className="text-zinc-600 text-center text-sm mb-10">Clone and install in 30 seconds</p>
+        </FadeIn>
 
-        <ScrollReveal>
-          <h2 className="text-4xl font-black text-white mb-2 text-center">Quick Start</h2>
-          <p className="text-zinc-500 text-center mb-12">Clone and install in 30 seconds</p>
-        </ScrollReveal>
-
-        <ScrollReveal delay={0.2}>
-          <div className="max-w-3xl mx-auto">
+        <FadeIn delay={0.1}>
+          <div className="max-w-2xl mx-auto">
             <CodeBlock>{`# Clone and install
 git clone https://github.com/willsigmon/sigstack.git && cd sigstack && \\
 cp -r skills/* ~/.claude/skills/ && \\
 cp -r commands/* ~/.claude/commands/ && \\
 mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
           </div>
-        </ScrollReveal>
+        </FadeIn>
       </section>
 
       {/* What's Inside */}
-      <section className="relative mx-auto max-w-6xl px-6 py-32">
-        <ScrollReveal>
-          <h2 className="text-4xl font-black text-white mb-2 text-center">What&apos;s Inside</h2>
-          <p className="text-zinc-500 text-center mb-16">Everything you need to ship with Claude Code</p>
-        </ScrollReveal>
+      <section className="mx-auto max-w-4xl px-6 py-24">
+        <FadeIn>
+          <h2 className="text-2xl font-bold text-white mb-1 text-center">What&apos;s Inside</h2>
+          <p className="text-zinc-600 text-center text-sm mb-12">Everything you need to ship with Claude Code</p>
+        </FadeIn>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
-              icon: "🧠",
               title: "89 Skills",
-              description: "iOS, audio/ML, debug, architecture, n8n workflows, and more",
-              gradient: "from-blue-500/20 to-purple-500/20",
+              description: "iOS, audio/ML, debug, architecture, n8n workflows",
             },
             {
-              icon: "⚡",
               title: "24 Commands",
-              description: "/test, /build, /deploy, /analyze, /cleanup, /git...",
-              gradient: "from-green-500/20 to-emerald-500/20",
+              description: "/test, /build, /deploy, /analyze, /cleanup, /git",
             },
             {
-              icon: "🍎",
               title: "iOS Bundle",
-              description: "Sosumi + Ralph Wiggum protocol + 20 Apple internal docs",
-              gradient: "from-pink-500/20 to-rose-500/20",
+              description: "Sosumi + Ralph Wiggum protocol + Apple docs",
             },
             {
-              icon: "🔮",
               title: "BRAIN Network",
-              description: "Multi-device sync via Tailscale for Claude context",
-              gradient: "from-purple-500/20 to-violet-500/20",
+              description: "Multi-device sync via Tailscale for context",
             },
           ].map((item, i) => (
-            <ScrollReveal key={item.title} delay={i * 0.1}>
-              <TiltCard className={`glass rounded-xl p-6 text-center h-full bg-gradient-to-br ${item.gradient}`}>
-                <motion.div
-                  className="text-5xl mb-4"
-                  whileHover={{ scale: 1.2, rotate: 10 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                >
-                  {item.icon}
-                </motion.div>
-                <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
-                <p className="text-sm text-zinc-400">{item.description}</p>
-              </TiltCard>
-            </ScrollReveal>
+            <FadeIn key={item.title} delay={i * 0.05}>
+              <div className="rounded-xl p-5 bg-white/[0.03] border border-white/[0.06] h-full">
+                <h3 className="text-sm font-medium text-white mb-2">{item.title}</h3>
+                <p className="text-xs text-zinc-500">{item.description}</p>
+              </div>
+            </FadeIn>
           ))}
         </div>
       </section>
 
       {/* Philosophy */}
-      <section className="mx-auto max-w-6xl px-6 py-32">
-        <ScrollReveal>
-          <motion.div
-            className="glass rounded-2xl p-8 sm:p-12 text-center relative overflow-hidden"
-            whileHover={{ scale: 1.01 }}
-          >
-            {/* Animated background */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-blue-500/10"
-              animate={{ x: ["-100%", "100%"] }}
-              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            />
-
-            <h2 className="relative text-2xl sm:text-3xl font-black text-white mb-4">
+      <section className="mx-auto max-w-4xl px-6 py-24">
+        <FadeIn>
+          <div className="rounded-xl p-8 bg-white/[0.02] border border-white/[0.06]">
+            <h2 className="text-xl font-bold text-white mb-3 text-center">
               Philosophy: Nanobot Healing Swarm
             </h2>
-            <p className="relative text-zinc-400 max-w-2xl mx-auto mb-10">
+            <p className="text-zinc-500 text-sm max-w-xl mx-auto text-center mb-8">
               My CLAUDE.md instructs Claude to act as a &ldquo;healing swarm of nanobots&rdquo;&mdash;find every bug,
               scrub every infection, optimize every inefficiency.
             </p>
-            <div className="relative grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-left">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { principle: "Tools first", meaning: "Check MCP/skill before writing code" },
                 { principle: "Parallel agents", meaning: "Spawn 20+ agents for complex tasks" },
                 { principle: "Context is attention", meaning: "Manage 60% threshold, use /compact" },
                 { principle: "Memory graph", meaning: "Use Omi for session continuity" },
               ].map((item, i) => (
-                <motion.div
-                  key={item.principle}
-                  className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="font-semibold text-white mb-1">{item.principle}</div>
-                  <div className="text-sm text-zinc-500">{item.meaning}</div>
-                </motion.div>
+                <FadeIn key={item.principle} delay={i * 0.05}>
+                  <div className="bg-white/[0.03] rounded-lg p-4">
+                    <div className="text-sm font-medium text-white mb-1">{item.principle}</div>
+                    <div className="text-xs text-zinc-600">{item.meaning}</div>
+                  </div>
+                </FadeIn>
               ))}
             </div>
-          </motion.div>
-        </ScrollReveal>
+          </div>
+        </FadeIn>
       </section>
 
       {/* Support */}
-      <section className="mx-auto max-w-6xl px-6 py-32">
-        <ScrollReveal>
-          <h2 className="text-4xl font-black text-white mb-2 text-center">Support the Stack</h2>
-          <p className="text-zinc-500 text-center mb-12">
+      <section className="mx-auto max-w-4xl px-6 py-24">
+        <FadeIn>
+          <h2 className="text-2xl font-bold text-white mb-1 text-center">Support the Stack</h2>
+          <p className="text-zinc-600 text-center text-sm mb-10">
             If this helps you ship faster, consider using my affiliate links
           </p>
-        </ScrollReveal>
+        </FadeIn>
 
-        <ScrollReveal delay={0.2}>
-          <div className="flex flex-wrap justify-center gap-4">
+        <FadeIn delay={0.1}>
+          <div className="flex flex-wrap justify-center gap-3">
             {[
-              { name: "Omi", url: "https://www.omi.me/?ref=WILLSIGMON", icon: "🧠" },
-              { name: "Typeless", url: "https://www.typeless.com/?via=wsig", icon: "🎤" },
-              { name: "Wispr Flow", url: "https://wisprflow.ai/r?WILL48", icon: "🗣" },
-              { name: "Tip the Creator", url: "https://tip.wsig.me", icon: "💜" },
-            ].map((item, i) => (
-              <MagneticButton
+              { name: "Omi", url: "https://www.omi.me/?ref=WILLSIGMON" },
+              { name: "Typeless", url: "https://www.typeless.com/?via=wsig" },
+              { name: "Wispr Flow", url: "https://wisprflow.ai/r?WILL48" },
+              { name: "Tip the Creator", url: "https://tip.wsig.me" },
+            ].map((item) => (
+              <Link
                 key={item.name}
                 href={item.url}
-                className="inline-flex items-center gap-2 glass rounded-full px-6 py-3 hover:bg-white/10 transition-colors"
+                target="_blank"
+                className="inline-flex items-center gap-2 rounded-lg bg-white/[0.03] border border-white/[0.06] px-5 py-2.5 text-sm text-white hover:bg-white/[0.06] transition-colors"
               >
-                <span>{item.icon}</span>
-                <span className="text-white">{item.name}</span>
-              </MagneticButton>
+                {item.name}
+              </Link>
             ))}
           </div>
-        </ScrollReveal>
+        </FadeIn>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-800 py-12">
-        <div className="mx-auto max-w-6xl px-6">
+      <footer className="border-t border-white/[0.06] py-12">
+        <div className="mx-auto max-w-4xl px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="text-center sm:text-left">
-              <motion.div
-                className="font-black text-xl text-white mb-1"
-                whileHover={{ scale: 1.05 }}
-              >
-                sigstack
-              </motion.div>
-              <div className="text-sm text-zinc-500">
-                Built with Claude Code Opus 4.5 and ~5,000 hours of figuring out what works.
+              <div className="font-bold text-white mb-1">sigstack</div>
+              <div className="text-xs text-zinc-600">
+                Built with Claude Code and ~5,000 hours of figuring out what works.
               </div>
             </div>
-            <div className="flex gap-6">
+            <div className="flex gap-5">
               {[
                 { href: "https://x.com/willsigmon", icon: <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /> },
                 { href: "https://github.com/willsigmon", icon: <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" /> },
                 { href: "https://linkedin.com/in/willsigmon", icon: <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /> },
-              ].map((social, i) => (
-                <motion.a
+              ].map((social) => (
+                <a
                   key={social.href}
                   href={social.href}
                   target="_blank"
-                  className="text-zinc-400 hover:text-white transition-colors"
-                  whileHover={{ scale: 1.2, y: -2 }}
+                  className="text-zinc-600 hover:text-white transition-colors"
                 >
-                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                     {social.icon}
                   </svg>
-                </motion.a>
+                </a>
               ))}
             </div>
           </div>
-          <div className="mt-8 text-center text-sm text-zinc-600">
+          <div className="mt-8 text-center text-xs text-zinc-700">
             MIT License — Use it, modify it, make it yours.
           </div>
         </div>
