@@ -481,8 +481,8 @@ function StackingTitle({ onComplete }: { onComplete: () => void }) {
   }, [onComplete]);
 
   return (
-    <div className="relative h-[160px] sm:h-[200px] flex items-center justify-center overflow-visible">
-      <div className="relative flex items-center justify-center overflow-visible h-full w-full">
+    <div className="relative h-[200px] sm:h-[280px] flex items-center justify-center" style={{ overflow: 'visible' }}>
+      <div className="relative flex items-center justify-center" style={{ overflow: 'visible' }}>
         {letters.map((letter, i) => {
           // Calculate horizontal offset for final position
           const letterWidth = 48; // Approximate width per letter
@@ -743,7 +743,7 @@ export default function Home() {
           style={{ opacity: heroOpacity, scale: heroScale }}
         >
           {/* Title with stacking animation - click to replay */}
-          <div className="mb-6 h-[160px] sm:h-[200px] flex items-center justify-center">
+          <div className="mb-6 h-[200px] sm:h-[280px] flex items-center justify-center" style={{ overflow: 'visible' }}>
             {isClient && isAnimating ? (
               <StackingTitle key={animationKey} onComplete={handleAnimationComplete} />
             ) : (
