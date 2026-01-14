@@ -234,6 +234,47 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] overflow-hidden">
+      {/* Breathing background wallpaper */}
+      <div className="fixed inset-0 -z-10">
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 50, 180, 0.15), transparent),
+              radial-gradient(ellipse 60% 40% at 100% 50%, rgba(100, 50, 200, 0.1), transparent),
+              radial-gradient(ellipse 50% 30% at 0% 80%, rgba(60, 80, 180, 0.1), transparent)
+            `,
+          }}
+          animate={{
+            scale: [1, 1.05, 1],
+            opacity: [0.8, 1, 0.8],
+          }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* Mesh grid overlay */}
+        <motion.div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: "60px 60px",
+          }}
+          animate={{
+            opacity: [0.02, 0.04, 0.02],
+          }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* Noise texture */}
+        <div
+          className="absolute inset-0 opacity-[0.015]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          }}
+        />
+      </div>
+
       {/* Hero */}
       <section ref={heroRef} className="relative min-h-screen flex items-center justify-center">
         {/* Animated background orbs */}
