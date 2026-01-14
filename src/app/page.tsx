@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
 import { useRef } from "react";
 
@@ -58,19 +59,21 @@ function FadeIn({ children, delay = 0, className = "" }: { children: React.React
   );
 }
 
-// Tech stack data
+// Tech stack data with logos
 const brainStack = [
   {
     name: "Claude Code",
     description: "CLI-first AI coding with Opus 4.5",
-    color: "from-orange-500 to-amber-600",
+    logo: "https://cdn.simpleicons.org/anthropic/D4A574",
+    bgColor: "bg-gradient-to-br from-orange-500/20 to-amber-600/20",
     url: "https://claude.ai/code",
     highlight: true,
   },
   {
     name: "Omi",
     description: "AI wearable + MCP for memory persistence",
-    color: "from-emerald-400 to-teal-600",
+    fallbackLetter: "O",
+    bgColor: "bg-gradient-to-br from-emerald-400/20 to-teal-600/20",
     url: "https://www.omi.me/?ref=WILLSIGMON",
   },
 ];
@@ -79,13 +82,15 @@ const voiceStack = [
   {
     name: "Typeless",
     description: "Dictation that actually works",
-    color: "from-blue-400 to-indigo-600",
+    fallbackLetter: "T",
+    bgColor: "bg-gradient-to-br from-blue-400/20 to-indigo-600/20",
     url: "https://www.typeless.com/?via=wsig",
   },
   {
     name: "Wispr Flow",
     description: "Voice-to-code engine",
-    color: "from-violet-400 to-purple-600",
+    logo: "https://cdn.prod.website-files.com/682f84b3838c89f8ff7667db/68d427f5e3a837706e390bde_logo-symbol-light.png",
+    bgColor: "bg-gradient-to-br from-violet-400/20 to-purple-600/20",
     url: "https://wisprflow.ai/r?WILL48",
   },
 ];
@@ -94,7 +99,8 @@ const terminalStack = [
   {
     name: "iTerm2",
     description: "Feature-rich macOS terminal",
-    color: "from-green-400 to-emerald-600",
+    logo: "https://cdn.simpleicons.org/iterm2/10B981",
+    bgColor: "bg-gradient-to-br from-green-400/20 to-emerald-600/20",
     url: "https://iterm2.com",
   },
 ];
@@ -103,19 +109,22 @@ const infraStack = [
   {
     name: "GitHub",
     description: "Code, PRs, Actions",
-    color: "from-zinc-400 to-zinc-600",
+    logo: "https://cdn.simpleicons.org/github/white",
+    bgColor: "bg-gradient-to-br from-zinc-400/20 to-zinc-600/20",
     url: "https://github.com",
   },
   {
     name: "Vercel",
     description: "Deploy frontend + serverless",
-    color: "from-zinc-300 to-zinc-500",
+    logo: "https://cdn.simpleicons.org/vercel/white",
+    bgColor: "bg-gradient-to-br from-zinc-300/20 to-zinc-500/20",
     url: "https://vercel.com",
   },
   {
     name: "Supabase",
     description: "Postgres + Auth + Realtime",
-    color: "from-emerald-400 to-green-600",
+    logo: "https://cdn.simpleicons.org/supabase/3FCF8E",
+    bgColor: "bg-gradient-to-br from-emerald-400/20 to-green-600/20",
     url: "https://supabase.com",
   },
 ];
@@ -131,14 +140,18 @@ const mcpServers = [
 function StackCard({
   name,
   description,
-  color,
+  logo,
+  fallbackLetter,
+  bgColor,
   url,
   highlight,
   index,
 }: {
   name: string;
   description: string;
-  color: string;
+  logo?: string;
+  fallbackLetter?: string;
+  bgColor: string;
   url: string;
   highlight?: boolean;
   index: number;
@@ -149,27 +162,38 @@ function StackCard({
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className={`group relative block rounded-2xl p-5 transition-all duration-300 bg-white/[0.03] backdrop-blur-sm border border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.06] overflow-hidden ${
-          highlight ? "ring-1 ring-purple-500/40 shadow-lg shadow-purple-500/10" : ""
+        className={`group relative block rounded-2xl p-5 transition-all duration-300 bg-white/[0.06] backdrop-blur-md border border-white/[0.12] hover:border-white/[0.25] hover:bg-white/[0.1] overflow-hidden ${
+          highlight ? "ring-1 ring-purple-400/50 shadow-lg shadow-purple-500/20" : ""
         }`}
       >
         {/* Hover glow */}
-        <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${color} blur-2xl -z-10`} style={{ opacity: 0.1 }} />
+        <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${bgColor} blur-2xl -z-10`} />
 
         <div className="flex items-center gap-4">
-          <div className={`h-11 w-11 flex-shrink-0 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg`}>
-            <span className="text-white font-bold text-sm">{name.charAt(0)}</span>
+          <div className={`h-12 w-12 flex-shrink-0 rounded-xl ${bgColor} flex items-center justify-center shadow-lg border border-white/[0.1]`}>
+            {logo ? (
+              <Image
+                src={logo}
+                alt={name}
+                width={28}
+                height={28}
+                className="object-contain"
+                unoptimized
+              />
+            ) : fallbackLetter ? (
+              <span className="text-white font-bold text-lg">{fallbackLetter}</span>
+            ) : null}
           </div>
           <div>
-            <h3 className="font-semibold text-white group-hover:text-purple-200 transition-colors">
+            <h3 className="font-semibold text-white group-hover:text-purple-200 transition-colors flex items-center gap-2">
               {name}
               {highlight && (
-                <span className="ml-2 text-xs bg-gradient-to-r from-purple-500/30 to-pink-500/30 text-purple-200 px-2.5 py-1 rounded-full border border-purple-500/20">
+                <span className="text-xs bg-gradient-to-r from-purple-500/40 to-pink-500/40 text-purple-100 px-2.5 py-1 rounded-full border border-purple-400/30">
                   Core
                 </span>
               )}
             </h3>
-            <p className="text-sm text-zinc-400">{description}</p>
+            <p className="text-sm text-zinc-300">{description}</p>
           </div>
         </div>
       </Link>
@@ -180,12 +204,12 @@ function StackCard({
 function CodeBlock({ children }: { children: string }) {
   return (
     <motion.pre
-      className="rounded-2xl p-6 overflow-x-auto text-sm bg-gradient-to-br from-[#0d0d1a] to-[#1a1a2e] border border-white/[0.08] shadow-2xl"
+      className="rounded-2xl p-6 overflow-x-auto text-sm bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-md border border-white/[0.1] shadow-2xl"
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
     >
-      <code className="text-emerald-400">{children}</code>
+      <code className="text-emerald-300">{children}</code>
     </motion.pre>
   );
 }
@@ -219,7 +243,7 @@ const SectionIcon = ({ type }: { type: "brain" | "voice" | "terminal" | "cloud" 
       </svg>
     ),
   };
-  return <span className="text-purple-400">{icons[type]}</span>;
+  return <span className="text-purple-300">{icons[type]}</span>;
 };
 
 export default function Home() {
@@ -233,16 +257,16 @@ export default function Home() {
   const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-[#0f0a1f] to-slate-900 overflow-hidden">
       {/* Breathing background wallpaper */}
       <div className="fixed inset-0 -z-10">
         <motion.div
           className="absolute inset-0"
           style={{
             background: `
-              radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 50, 180, 0.15), transparent),
-              radial-gradient(ellipse 60% 40% at 100% 50%, rgba(100, 50, 200, 0.1), transparent),
-              radial-gradient(ellipse 50% 30% at 0% 80%, rgba(60, 80, 180, 0.1), transparent)
+              radial-gradient(ellipse 80% 50% at 50% -20%, rgba(139, 92, 246, 0.3), transparent),
+              radial-gradient(ellipse 60% 40% at 100% 50%, rgba(59, 130, 246, 0.2), transparent),
+              radial-gradient(ellipse 50% 30% at 0% 80%, rgba(236, 72, 153, 0.15), transparent)
             `,
           }}
           animate={{
@@ -253,22 +277,22 @@ export default function Home() {
         />
         {/* Mesh grid overlay */}
         <motion.div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+              linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)
             `,
             backgroundSize: "60px 60px",
           }}
           animate={{
-            opacity: [0.02, 0.04, 0.02],
+            opacity: [0.03, 0.06, 0.03],
           }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
         {/* Noise texture */}
         <div
-          className="absolute inset-0 opacity-[0.015]"
+          className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
           }}
@@ -277,40 +301,40 @@ export default function Home() {
 
       {/* Hero */}
       <section ref={heroRef} className="relative min-h-screen flex items-center justify-center">
-        {/* Animated background orbs */}
+        {/* Animated background orbs - brighter */}
         <div className="absolute inset-0 overflow-hidden">
           <motion.div
-            className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-purple-600/20 rounded-full filter blur-[120px]"
+            className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-purple-500/30 rounded-full filter blur-[150px]"
             animate={{
               scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3],
+              opacity: [0.4, 0.6, 0.4],
               x: [0, 30, 0],
               y: [0, -20, 0],
             }}
             transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-blue-600/20 rounded-full filter blur-[100px]"
+            className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-blue-500/25 rounded-full filter blur-[120px]"
             animate={{
               scale: [1.2, 1, 1.2],
-              opacity: [0.2, 0.4, 0.2],
+              opacity: [0.3, 0.5, 0.3],
               x: [0, -20, 0],
               y: [0, 30, 0],
             }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-pink-600/15 rounded-full filter blur-[80px]"
+            className="absolute top-1/2 right-1/3 w-[400px] h-[400px] bg-pink-500/20 rounded-full filter blur-[100px]"
             animate={{
               scale: [1, 1.3, 1],
-              opacity: [0.2, 0.3, 0.2],
+              opacity: [0.3, 0.4, 0.3],
             }}
             transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0a]/50 to-[#0a0a0a]" />
+        {/* Gradient overlay - lighter */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/30 to-slate-900/80" />
 
         {/* Hero content */}
         <motion.div
@@ -321,9 +345,9 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 rounded-full bg-white/[0.05] backdrop-blur-sm px-4 py-2 text-sm text-zinc-400 border border-white/[0.1] mb-8"
+            className="inline-flex items-center gap-2 rounded-full bg-white/[0.1] backdrop-blur-md px-4 py-2 text-sm text-zinc-300 border border-white/[0.15] mb-8"
           >
-            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
             Open Source
           </motion.div>
 
@@ -333,7 +357,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="text-6xl sm:text-8xl font-black tracking-tight mb-6"
           >
-            <span className="bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent drop-shadow-2xl">
               sigstack
             </span>
           </motion.h1>
@@ -342,7 +366,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl sm:text-2xl text-zinc-400 max-w-2xl mx-auto mb-4"
+            className="text-xl sm:text-2xl text-zinc-300 max-w-2xl mx-auto mb-4"
           >
             My personal <span className="text-white font-semibold">Claude Code stack</span> for shipping software with AI
           </motion.p>
@@ -351,7 +375,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-zinc-500 mb-12"
+            className="text-zinc-400 mb-12"
           >
             89 skills · 24 commands · iOS bundle + Apple&apos;s hidden docs · Ready to clone
           </motion.p>
@@ -364,20 +388,20 @@ export default function Home() {
             className="flex justify-center gap-10 sm:gap-16 mb-14"
           >
             {[
-              { label: "Skills", value: "89", gradient: "from-blue-400 to-cyan-400" },
-              { label: "Commands", value: "24", gradient: "from-green-400 to-emerald-400" },
-              { label: "MCP Servers", value: "15+", gradient: "from-purple-400 to-pink-400" },
-            ].map((stat, i) => (
+              { label: "Skills", value: "89", gradient: "from-blue-400 to-cyan-300" },
+              { label: "Commands", value: "24", gradient: "from-green-400 to-emerald-300" },
+              { label: "MCP Servers", value: "15+", gradient: "from-purple-400 to-pink-300" },
+            ].map((stat) => (
               <motion.div
                 key={stat.label}
                 className="text-center"
                 whileHover={{ scale: 1.1, y: -5 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
-                <div className={`text-4xl sm:text-5xl font-black bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
+                <div className={`text-4xl sm:text-5xl font-black bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent drop-shadow-lg`}>
                   {stat.value}
                 </div>
-                <div className="text-xs text-zinc-500 mt-1">{stat.label}</div>
+                <div className="text-xs text-zinc-400 mt-1">{stat.label}</div>
               </motion.div>
             ))}
           </motion.div>
@@ -391,7 +415,7 @@ export default function Home() {
           >
             <MagneticButton
               href="https://github.com/willsigmon/sigstack"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-8 py-4 text-black font-semibold hover:bg-zinc-100 transition-colors shadow-lg shadow-white/10"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-8 py-4 text-slate-900 font-semibold hover:bg-zinc-100 transition-colors shadow-xl shadow-white/20"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                 <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
@@ -400,7 +424,7 @@ export default function Home() {
             </MagneticButton>
             <Link
               href="#quick-start"
-              className="inline-flex items-center justify-center rounded-xl bg-white/[0.05] backdrop-blur-sm border border-white/[0.1] px-8 py-4 text-white font-semibold hover:bg-white/[0.1] transition-colors"
+              className="inline-flex items-center justify-center rounded-xl bg-white/[0.1] backdrop-blur-md border border-white/[0.15] px-8 py-4 text-white font-semibold hover:bg-white/[0.15] transition-colors"
             >
               Quick Start
             </Link>
@@ -412,13 +436,13 @@ export default function Home() {
       <section className="relative mx-auto max-w-5xl px-6 py-32">
         <FadeIn>
           <h2 className="text-3xl sm:text-4xl font-black text-white mb-2 text-center">The Stack</h2>
-          <p className="text-zinc-500 text-center mb-16">Tools that power the workflow</p>
+          <p className="text-zinc-400 text-center mb-16">Tools that power the workflow</p>
         </FadeIn>
 
         {/* Brain */}
         <div className="mb-14">
           <FadeIn>
-            <h3 className="text-sm font-semibold text-zinc-300 mb-5 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-zinc-200 mb-5 flex items-center gap-2">
               <SectionIcon type="brain" /> The Brain
             </h3>
           </FadeIn>
@@ -432,7 +456,7 @@ export default function Home() {
         {/* Voice */}
         <div className="mb-14">
           <FadeIn>
-            <h3 className="text-sm font-semibold text-zinc-300 mb-5 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-zinc-200 mb-5 flex items-center gap-2">
               <SectionIcon type="voice" /> Voice Input
             </h3>
           </FadeIn>
@@ -446,7 +470,7 @@ export default function Home() {
         {/* Terminal */}
         <div className="mb-14">
           <FadeIn>
-            <h3 className="text-sm font-semibold text-zinc-300 mb-5 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-zinc-200 mb-5 flex items-center gap-2">
               <SectionIcon type="terminal" /> Terminal
             </h3>
           </FadeIn>
@@ -460,7 +484,7 @@ export default function Home() {
         {/* Infrastructure */}
         <div className="mb-14">
           <FadeIn>
-            <h3 className="text-sm font-semibold text-zinc-300 mb-5 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-zinc-200 mb-5 flex items-center gap-2">
               <SectionIcon type="cloud" /> Infrastructure
             </h3>
           </FadeIn>
@@ -473,12 +497,12 @@ export default function Home() {
 
         {/* MCP Servers */}
         <FadeIn>
-          <h3 className="text-sm font-semibold text-zinc-300 mb-5 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-zinc-200 mb-5 flex items-center gap-2">
             <SectionIcon type="plug" /> MCP Servers
           </h3>
         </FadeIn>
         <FadeIn delay={0.1}>
-          <div className="rounded-2xl p-6 bg-white/[0.03] backdrop-blur-sm border border-white/[0.08]">
+          <div className="rounded-2xl p-6 bg-white/[0.06] backdrop-blur-md border border-white/[0.12]">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {mcpServers.map((server, i) => (
                 <motion.div
@@ -489,9 +513,9 @@ export default function Home() {
                   transition={{ delay: i * 0.05 }}
                   viewport={{ once: true }}
                 >
-                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
                   <span className="text-white font-medium">{server.name}</span>
-                  <span className="text-zinc-500 text-sm">{server.purpose}</span>
+                  <span className="text-zinc-400 text-sm">{server.purpose}</span>
                 </motion.div>
               ))}
             </div>
@@ -503,12 +527,12 @@ export default function Home() {
       <section id="quick-start" className="relative mx-auto max-w-5xl px-6 py-32">
         {/* Background glow */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-[600px] h-[400px] bg-gradient-to-r from-purple-600/10 to-blue-600/10 rounded-full filter blur-[100px]" />
+          <div className="w-[600px] h-[400px] bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-full filter blur-[120px]" />
         </div>
 
         <FadeIn>
           <h2 className="text-3xl sm:text-4xl font-black text-white mb-2 text-center">Quick Start</h2>
-          <p className="text-zinc-500 text-center mb-12">Clone and install in 30 seconds</p>
+          <p className="text-zinc-400 text-center mb-12">Clone and install in 30 seconds</p>
         </FadeIn>
 
         <FadeIn delay={0.1}>
@@ -526,7 +550,7 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
       <section className="mx-auto max-w-5xl px-6 py-32">
         <FadeIn>
           <h2 className="text-3xl sm:text-4xl font-black text-white mb-2 text-center">What&apos;s Inside</h2>
-          <p className="text-zinc-500 text-center mb-16">Everything you need to ship with Claude Code</p>
+          <p className="text-zinc-400 text-center mb-16">Everything you need to ship with Claude Code</p>
         </FadeIn>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -534,32 +558,32 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
             {
               title: "89 Skills",
               description: "iOS, audio/ML, debug, architecture, n8n workflows",
-              gradient: "from-blue-500/20 to-cyan-500/20",
+              gradient: "from-blue-500/30 to-cyan-500/30",
             },
             {
               title: "24 Commands",
               description: "/test, /build, /deploy, /analyze, /cleanup, /git",
-              gradient: "from-green-500/20 to-emerald-500/20",
+              gradient: "from-green-500/30 to-emerald-500/30",
             },
             {
               title: "iOS Bundle",
               description: "Sosumi + Ralph Wiggum protocol + Apple docs",
-              gradient: "from-pink-500/20 to-rose-500/20",
+              gradient: "from-pink-500/30 to-rose-500/30",
             },
             {
               title: "BRAIN Network",
               description: "Multi-device sync via Tailscale for context",
-              gradient: "from-purple-500/20 to-violet-500/20",
+              gradient: "from-purple-500/30 to-violet-500/30",
             },
           ].map((item, i) => (
             <FadeIn key={item.title} delay={i * 0.1}>
               <motion.div
-                className={`rounded-2xl p-6 bg-gradient-to-br ${item.gradient} backdrop-blur-sm border border-white/[0.08] h-full`}
+                className={`rounded-2xl p-6 bg-gradient-to-br ${item.gradient} backdrop-blur-md border border-white/[0.12] h-full`}
                 whileHover={{ y: -5, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
                 <h3 className="text-lg font-bold text-white mb-2">{item.title}</h3>
-                <p className="text-sm text-zinc-400">{item.description}</p>
+                <p className="text-sm text-zinc-300">{item.description}</p>
               </motion.div>
             </FadeIn>
           ))}
@@ -570,13 +594,13 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
       <section className="mx-auto max-w-5xl px-6 py-32">
         <FadeIn>
           <motion.div
-            className="rounded-3xl p-10 sm:p-14 bg-gradient-to-br from-purple-900/20 via-transparent to-blue-900/20 backdrop-blur-sm border border-white/[0.08] relative overflow-hidden"
+            className="rounded-3xl p-10 sm:p-14 bg-gradient-to-br from-purple-800/30 via-transparent to-blue-800/30 backdrop-blur-md border border-white/[0.12] relative overflow-hidden"
             whileHover={{ scale: 1.01 }}
             transition={{ type: "spring", stiffness: 200 }}
           >
             {/* Animated gradient line */}
             <motion.div
-              className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent"
+              className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-400 to-transparent"
               animate={{ x: ["-100%", "100%"] }}
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             />
@@ -584,7 +608,7 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
             <h2 className="text-2xl sm:text-3xl font-black text-white mb-4 text-center">
               Philosophy: Nanobot Healing Swarm
             </h2>
-            <p className="text-zinc-400 max-w-2xl mx-auto text-center mb-12">
+            <p className="text-zinc-300 max-w-2xl mx-auto text-center mb-12">
               My CLAUDE.md instructs Claude to act as a &ldquo;healing swarm of nanobots&rdquo;&mdash;find every bug,
               scrub every infection, optimize every inefficiency.
             </p>
@@ -597,7 +621,7 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
               ].map((item, i) => (
                 <motion.div
                   key={item.principle}
-                  className="bg-white/[0.05] rounded-xl p-5 hover:bg-white/[0.08] transition-colors"
+                  className="bg-white/[0.08] rounded-xl p-5 hover:bg-white/[0.12] transition-colors border border-white/[0.08]"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
@@ -605,7 +629,7 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
                   whileHover={{ y: -3 }}
                 >
                   <div className="font-semibold text-white mb-1">{item.principle}</div>
-                  <div className="text-sm text-zinc-500">{item.meaning}</div>
+                  <div className="text-sm text-zinc-400">{item.meaning}</div>
                 </motion.div>
               ))}
             </div>
@@ -617,7 +641,7 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
       <section className="mx-auto max-w-5xl px-6 py-32">
         <FadeIn>
           <h2 className="text-3xl sm:text-4xl font-black text-white mb-2 text-center">Support the Stack</h2>
-          <p className="text-zinc-500 text-center mb-12">
+          <p className="text-zinc-400 text-center mb-12">
             If this helps you ship faster, consider using my affiliate links
           </p>
         </FadeIn>
@@ -635,8 +659,8 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
                 href={item.url}
                 className={`inline-flex items-center gap-2 rounded-xl px-6 py-3 font-medium transition-colors ${
                   item.highlight
-                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25"
-                    : "bg-white/[0.05] backdrop-blur-sm border border-white/[0.1] text-white hover:bg-white/[0.1]"
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-xl shadow-purple-500/30"
+                    : "bg-white/[0.1] backdrop-blur-md border border-white/[0.15] text-white hover:bg-white/[0.15]"
                 }`}
               >
                 {item.name}
@@ -647,12 +671,12 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.08] py-14">
+      <footer className="border-t border-white/[0.1] py-14">
         <div className="mx-auto max-w-5xl px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="text-center sm:text-left">
               <div className="font-black text-xl text-white mb-1">sigstack</div>
-              <div className="text-sm text-zinc-500">
+              <div className="text-sm text-zinc-400">
                 Built with Claude Code and ~5,000 hours of figuring out what works.
               </div>
             </div>
@@ -666,7 +690,7 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
                   key={social.href}
                   href={social.href}
                   target="_blank"
-                  className="text-zinc-500 hover:text-white transition-colors"
+                  className="text-zinc-400 hover:text-white transition-colors"
                   whileHover={{ scale: 1.2, y: -2 }}
                 >
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -676,7 +700,7 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
               ))}
             </div>
           </div>
-          <div className="mt-10 text-center text-sm text-zinc-600">
+          <div className="mt-10 text-center text-sm text-zinc-500">
             MIT License — Use it, modify it, make it yours.
           </div>
         </div>
