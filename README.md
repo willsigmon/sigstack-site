@@ -1,25 +1,25 @@
-# BRAIN - Vibe Coder's AI Development Stack
+# Sigstack - Vibe Coder's AI Development Stack
 
 > **Your buddy's complete guide to my AI-assisted development setup**
 >
 > Last Updated: January 2026
 
-Welcome to the BRAIN (Distributed AI Configuration Network). This repo contains everything you need to replicate my vibe coding setup across macOS, Linux, and Windows.
+Welcome to Sigstack — my complete Claude Code configuration for shipping software with AI. This repo contains everything you need to replicate my vibe coding setup across macOS, Linux, and Windows.
 
 ## Quick Start
 
 ```bash
 # Clone this repo
-git clone https://github.com/willsigmon/brain.git ~/.brain
+git clone https://github.com/willsigmon/sigstack.git ~/.sigstack
 
 # Run the setup script
-cd ~/.brain && ./setup.sh
+cd ~/.sigstack && ./setup.sh
 ```
 
 ## What's Inside
 
 ```
-brain/
+sigstack/
 ├── claude/              # Claude Code configuration (primary tool)
 │   ├── skills/          # 89 reusable AI skills
 │   ├── commands/        # 24 slash commands
@@ -361,14 +361,14 @@ Self-hosted workflow automation on your Unraid server.
 | Workflow | Purpose |
 |----------|---------|
 | AI Tips Monitor | Scrapes Reddit/HN for coding tips 3x daily |
-| BRAIN Sync | Syncs rules across all devices |
+| Sigstack Sync | Syncs rules across all devices |
 | Git Backup | Automated repo backups |
 
 See [`n8n-workflows/`](./n8n-workflows/) for importable workflows.
 
 ---
 
-## Device Sync (BRAIN Network)
+## Device Sync (Sigstack Network)
 
 Sync configuration across all your machines via Tailscale:
 
@@ -385,7 +385,7 @@ mba (MacBook Air) ─┬─ tower (Unraid)
 
 ### Manual Sync
 ```bash
-~/.claude/scripts/sync-to-brain-network.sh
+~/.claude/scripts/sync-to-sigstack-network.sh
 ```
 
 ---
@@ -439,7 +439,7 @@ claude --thinking
 
 - [ ] Install Ghostty
 - [ ] Install Claude Code CLI
-- [ ] Clone this repo to `~/.brain`
+- [ ] Clone this repo to `~/.sigstack`
 - [ ] Symlink configs: `./setup.sh`
 - [ ] Install MCP servers
 - [ ] Set up Tailscale (optional, for multi-device)

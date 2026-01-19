@@ -122,7 +122,7 @@ function FadeIn({ children, delay = 0, className = "" }: { children: React.React
 }
 
 // Tech stack data - brand-matched colors
-const brainStack = [
+const coreStack = [
   {
     name: "Claude Code",
     description: "CLI-first AI coding",
@@ -180,6 +180,33 @@ const terminalStack = [
   },
 ];
 
+const agentStack = [
+  {
+    name: "Plural",
+    description: "Parallel branches",
+    logo: "https://cdn.simpleicons.org/git/F05032",
+    bgColor: "bg-gradient-to-br from-orange-500/30 to-red-500/40",
+    glowColor: "#F05032",
+    url: "https://github.com/zhubert/plural",
+  },
+  {
+    name: "Agor",
+    description: "Agent canvas",
+    logo: "https://cdn.simpleicons.org/figma/F24E1E",
+    bgColor: "bg-gradient-to-br from-pink-500/30 to-rose-500/40",
+    glowColor: "#F24E1E",
+    url: "https://github.com/preset-io/agor",
+  },
+  {
+    name: "Sled",
+    description: "Mobile voice",
+    logo: "https://cdn.simpleicons.org/airplayaudio/white",
+    bgColor: "bg-gradient-to-br from-cyan-500/30 to-teal-500/40",
+    glowColor: "#06B6D4",
+    url: "https://sled.layercode.com",
+  },
+];
+
 const infraStack = [
   {
     name: "GitHub",
@@ -214,7 +241,7 @@ const mcpServers = [
   { name: "Supabase", purpose: "Database" },
   { name: "n8n", purpose: "Workflows" },
   { name: "Memory", purpose: "Knowledge graph" },
-  { name: "BRAIN", purpose: "Life data" },
+  { name: "Wsiglog", purpose: "Life data" },
   { name: "Puppeteer", purpose: "Browser" },
   { name: "Glif", purpose: "AI images" },
   { name: "Xcode", purpose: "iOS builds" },
@@ -858,21 +885,25 @@ export default function Home() {
 
         {/* All tools in a unified grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
-          {/* Brain */}
-          {brainStack.map((item, i) => (
+          {/* Core */}
+          {coreStack.map((item, i) => (
             <StackCard key={item.name} {...item} index={i} />
           ))}
           {/* Voice */}
           {voiceStack.map((item, i) => (
-            <StackCard key={item.name} {...item} index={i + brainStack.length} />
+            <StackCard key={item.name} {...item} index={i + coreStack.length} />
           ))}
-          {/* Tools */}
+          {/* Agent Tools */}
+          {agentStack.map((item, i) => (
+            <StackCard key={item.name} {...item} index={i + coreStack.length + voiceStack.length} />
+          ))}
+          {/* Terminal Tools */}
           {terminalStack.map((item, i) => (
-            <StackCard key={item.name} {...item} index={i + brainStack.length + voiceStack.length} />
+            <StackCard key={item.name} {...item} index={i + coreStack.length + voiceStack.length + agentStack.length} />
           ))}
           {/* Infrastructure */}
           {infraStack.map((item, i) => (
-            <StackCard key={item.name} {...item} index={i + brainStack.length + voiceStack.length + terminalStack.length} />
+            <StackCard key={item.name} {...item} index={i + coreStack.length + voiceStack.length + agentStack.length + terminalStack.length} />
           ))}
         </div>
 
@@ -917,7 +948,7 @@ export default function Home() {
           <div className="rounded-xl sm:rounded-2xl p-5 sm:p-8 bg-white/[0.04] backdrop-blur-md border border-white/[0.1]">
             <div className="grid gap-6 sm:gap-8 md:grid-cols-2">
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3">Local Server (BRAIN)</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3">Local Server (Tower)</h3>
                 <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">
                   A home server running Unraid handles persistent services: n8n for workflow automation,
                   PostgreSQL for life logging, and Home Assistant for smart home integration. All accessible
@@ -1001,7 +1032,7 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
               gradient: "from-pink-500/30 to-rose-500/30",
             },
             {
-              title: "BRAIN Network",
+              title: "Sigstack Network",
               description: "Multi-device sync via Tailscale for context",
               gradient: "from-purple-500/30 to-violet-500/30",
             },
