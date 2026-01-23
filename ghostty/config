@@ -1,5 +1,5 @@
 # Ghostty Configuration - Synced across machines
-# Last updated: 2025-12-06
+# Last updated: 2025-12-07
 # Machines: Wills-Studio, Wills-MBA, tower.local
 
 # ============================================
@@ -43,7 +43,8 @@ macos-option-as-alt = true
 # Quick terminal (dropdown)
 quick-terminal-position = top
 quick-terminal-size = 50%
-quick-terminal-animation-duration = 0.1
+quick-terminal-screen = main
+quick-terminal-animation-duration = 0.08
 
 # ============================================
 # BEHAVIOR
@@ -63,6 +64,12 @@ selection-clear-on-typing = true
 # Scrollback
 scrollback-limit = 50000
 
+# UX improvements
+mouse-hide-while-typing = true
+resize-overlay = always
+unfocused-split-opacity = 0.85
+link-url = true
+
 # ============================================
 # KEYBINDS (Power user additions)
 # ============================================
@@ -72,11 +79,11 @@ keybind = super+shift+p=toggle_command_palette
 # Quick terminal (dropdown) toggle
 keybind = ctrl+`=toggle_quick_terminal
 
-# Split navigation (vim-style with Ctrl)
-keybind = ctrl+h=goto_split:left
-keybind = ctrl+j=goto_split:down
-keybind = ctrl+k=goto_split:up
-keybind = ctrl+l=goto_split:right
+# Split navigation (vim-style - using super+ctrl to avoid CLI conflicts)
+keybind = super+ctrl+h=goto_split:left
+keybind = super+ctrl+j=goto_split:down
+keybind = super+ctrl+k=goto_split:up
+keybind = super+ctrl+l=goto_split:right
 
 # Resize splits
 keybind = ctrl+shift+h=resize_split:left,20
@@ -94,29 +101,55 @@ keybind = super+shift+s=write_scrollback_file:open
 keybind = super+shift+0=reset_window_size
 
 # ============================================
-# THEME
+# THEME - Synesthesia Color Palette
 # ============================================
-# Dark theme palette (custom)
-background = #0d0d0d
-foreground = #e0e0e0
+# Based on wsig's grapheme-color synesthesia system
+# Warm terracotta/amber foundation with lavender accents
 
-# ANSI colors
-palette = 0=#1a1a1a
-palette = 1=#ff5f5f
-palette = 2=#5fff87
-palette = 3=#ffd75f
-palette = 4=#5f87ff
-palette = 5=#af5fff
-palette = 6=#5fd7ff
-palette = 7=#e0e0e0
-palette = 8=#808080
-palette = 9=#ff8787
-palette = 10=#87ffb0
-palette = 11=#ffe787
-palette = 12=#87afff
-palette = 13=#d787ff
-palette = 14=#87dfff
-palette = 15=#ffffff
+# Base colors - Claude dark mode inspired
+background = #1f170f
+foreground = #eee8df
+
+# Cursor - terracotta accent
+cursor-color = #e08151
+cursor-text = #1f170f
+
+# Selection - Leavn lavender
+selection-background = #3d2a48
+selection-foreground = #fff9f0
+
+# ANSI colors - Synesthesia aligned
+# Black variants (warm, not cold)
+palette = 0=#2a231b
+palette = 8=#5a4a3a
+
+# Red variants (Media burgundy)
+palette = 1=#cc6666
+palette = 9=#e08080
+
+# Green variants (Scripts/success green)
+palette = 2=#8cb369
+palette = 10=#a8cf85
+
+# Yellow variants (SigStack amber)
+palette = 3=#d4a93a
+palette = 11=#e8c060
+
+# Blue variants (HubDash teal, BRAIN neural)
+palette = 4=#7aa2c9
+palette = 12=#94bce3
+
+# Magenta variants (Leavn lavender, Modcaster)
+palette = 5=#9d8ec2
+palette = 13=#b7a8dc
+
+# Cyan variants (Catalyst, info)
+palette = 6=#6bb8c0
+palette = 14=#85d2da
+
+# White variants (warm cream, not stark)
+palette = 7=#c8c0b8
+palette = 15=#fff9f0
 
 # ============================================
 # CLAUDE X KEYBINDINGS
@@ -125,25 +158,19 @@ palette = 15=#ffffff
 keybind = super+shift+c=text:claudex\n
 
 # Sync Claude X configs from tower
-keybind = super+ctrl+s=text:~/.claude/sync-from-tower.sh && echo "✅ Claude X synced"\n
+keybind = super+alt+s=text:~/.claude/sync-from-tower.sh && echo "✅ Claude X synced"\n
 
 # Check Claude X status
-keybind = super+ctrl+x=text:~/.claude/claudex-status.sh\n
+keybind = super+alt+x=text:~/.claude/claudex-status.sh\n
 
 # Continue last Claude session
-keybind = super+ctrl+r=text:claude --resume\n
+keybind = super+alt+r=text:claude --resume\n
 
 # Quick ccusage check
-keybind = super+ctrl+u=text:npx ccusage daily --breakdown\n
+keybind = super+alt+u=text:npx ccusage daily --breakdown\n
 
 # Sync conversations to tower
-keybind = super+ctrl+shift+s=text:~/.claude/sync-conversations.sh && echo "✅ Conversations synced"\n
-
-# Sync vibe rules across all tools
-keybind = super+ctrl+v=text:~/.claude/sync-vibe-rules.sh\n
-
-# Launch Codex CLI
-keybind = super+shift+x=text:codex\n
+keybind = super+alt+shift+s=text:~/.claude/sync-conversations.sh && echo "✅ Conversations synced"\n
 
 # ============================================
 # PERFORMANCE

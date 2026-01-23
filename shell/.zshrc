@@ -404,27 +404,41 @@ CLAUDE_MODE="dark"  # default
 claude_dark() {
     CLAUDE_MODE="dark"
     # Claude dark: warm terracotta brown background, cream text
-    printf "\033]1337;SetColors=bg=29211b\007"  # #29211b
-    printf "\033]1337;SetColors=fg=eee8df\007"  # #eee8df
+    # Synesthesia palette: warm amber foundation
+    printf "\033]1337;SetColors=bg=1f170f\007"  # #1f170f (Claude terracotta base)
+    printf "\033]1337;SetColors=fg=eee8df\007"  # #eee8df (warm cream)
     printf "\033]1337;SetColors=bold=fff9f0\007"
     printf "\033]1337;SetColors=curbg=e08151\007"  # terracotta cursor
-    printf "\033]1337;SetColors=selbg=483a30\007"
+    printf "\033]1337;SetColors=selbg=3d2a48\007"  # Leavn lavender selection
     iterm2_set_tab "🌙 Claude Dark"
     export BAT_THEME="gruvbox-dark"
-    export FZF_DEFAULT_OPTS="$FZF_BASE_OPTS --color=bg+:#483a30,bg:#29211b,fg:#eee8df,fg+:#fff9f0,hl:#e08151,hl+:#f0a070,pointer:#e08151,marker:#8cb369,spinner:#e08151,header:#8cb369,border:#483a30,prompt:#e08151"
+    # FZF - Synesthesia colors
+    export FZF_DEFAULT_OPTS="$FZF_BASE_OPTS \
+        --color=bg+:#3d2a48,bg:#1f170f,fg:#eee8df,fg+:#fff9f0 \
+        --color=hl:#e08151,hl+:#f0a070 \
+        --color=pointer:#e08151,marker:#8cb369,spinner:#9d8ec2 \
+        --color=header:#8cb369,border:#3a2a20,prompt:#e08151 \
+        --color=info:#7aa2c9,gutter:#1f170f"
 }
 
 claude_light() {
     CLAUDE_MODE="light"
     # Claude light: warm cream background, dark brown text
-    printf "\033]1337;SetColors=bg=fcf9f4\007"  # #fcf9f4
-    printf "\033]1337;SetColors=fg=2d231b\007"  # #2d231b
+    # Synesthesia palette: inverted warmth
+    printf "\033]1337;SetColors=bg=fcf9f4\007"  # #fcf9f4 (warm cream)
+    printf "\033]1337;SetColors=fg=2d231b\007"  # #2d231b (warm brown)
     printf "\033]1337;SetColors=bold=1b140e\007"
     printf "\033]1337;SetColors=curbg=d46939\007"  # terracotta cursor
-    printf "\033]1337;SetColors=selbg=eae0d2\007"
+    printf "\033]1337;SetColors=selbg=d8c8e8\007"  # light lavender selection
     iterm2_set_tab "☀️ Claude Light"
     export BAT_THEME="gruvbox-light"
-    export FZF_DEFAULT_OPTS="$FZF_BASE_OPTS --color=bg+:#eae0d2,bg:#fcf9f4,fg:#2d231b,fg+:#1b140e,hl:#d46939,hl+:#c45a2a,pointer:#d46939,marker:#4a7c50,spinner:#d46939,header:#4a7c50,border:#d4c9b8,prompt:#d46939"
+    # FZF - Synesthesia light colors
+    export FZF_DEFAULT_OPTS="$FZF_BASE_OPTS \
+        --color=bg+:#d8c8e8,bg:#fcf9f4,fg:#2d231b,fg+:#1b140e \
+        --color=hl:#d46939,hl+:#c45a2a \
+        --color=pointer:#d46939,marker:#4a7c50,spinner:#7a6a9a \
+        --color=header:#4a7c50,border:#d4c9b8,prompt:#d46939 \
+        --color=info:#5a7a9a,gutter:#fcf9f4"
 }
 
 # Quick toggle

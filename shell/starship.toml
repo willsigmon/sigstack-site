@@ -1,0 +1,198 @@
+# ═══════════════════════════════════════════════════════════════════
+# ✨ Synesthesia-Friendly Starship Config
+# ═══════════════════════════════════════════════════════════════════
+# Rich colors, project context, and visual organization
+
+format = """
+$custom\
+$directory\
+$git_branch\
+$git_status\
+$git_state\
+$nodejs\
+$python\
+$swift\
+$rust\
+$golang\
+$docker_context\
+$package\
+$cmd_duration\
+$jobs\
+$line_break\
+$character"""
+
+# Right side prompt
+right_format = """$time"""
+
+[character]
+# Synesthesia: terracotta for success (warm, inviting), lavender for vim
+success_symbol = "[❯](bold #e08151)"
+error_symbol = "[❯](bold #cc6666)"
+vimcmd_symbol = "[❮](bold #9d8ec2)"
+
+[directory]
+style = "bold cyan"
+truncation_length = 4
+truncate_to_repo = true
+format = "[$path]($style)[$read_only]($read_only_style) "
+read_only = " 🔒"
+read_only_style = "red"
+
+# Project-specific directory styling (synesthesia mapping)
+[directory.substitutions]
+"LeavnOfficial/Leavn" = "💜 Leavn"
+"Leavn" = "💜 Leavn"
+"hubdash" = "🌊 HubDash"
+"sigstack" = "⚡ SigStack"
+"overnight-work" = "🌙 Overnight"
+"overnight" = "🌙 Overnight"
+"willsigmon-media" = "🎬 Media"
+"Scripts" = "🧪 Scripts"
+"scripts" = "🧪 Scripts"
+"tip-wsig" = "💰 Tip"
+"Modcaster" = "🎙️ Modcaster"
+".claude" = "🤖 Claude"
+"GitHub MBA" = "📦 GitHub"
+"n8n" = "🔄 n8n"
+"workflows" = "🔄 Workflows"
+"brain" = "🧠 BRAIN"
+"BRAIN" = "🧠 BRAIN"
+"catalyst" = "🚀 Catalyst"
+"carterhelms" = "🤝 Client"
+"TwoTwelve" = "🤝 Client"
+"iswcpssclosed" = "🏫 ISWCPSS"
+
+[git_branch]
+symbol = " "
+style = "bold #9d8ec2"  # Synesthesia: Leavn lavender for structure
+format = "[$symbol$branch(:$remote_branch)]($style) "
+truncation_length = 25
+truncation_symbol = "…"
+
+[git_status]
+style = "bold red"
+format = '([$all_status$ahead_behind]($style) )'
+conflicted = "⚡"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "[?${count}](blue)"
+stashed = "[≡${count}](cyan)"
+modified = "[!${count}](yellow)"
+staged = "[+${count}](green)"
+renamed = "»${count}"
+deleted = "[✘${count}](red)"
+
+[git_state]
+format = '[\($state( $progress_current of $progress_total)\)]($style) '
+cherry_pick = "[🍒 PICKING](bold red)"
+rebase = "[📝 REBASING](bold yellow)"
+merge = "[🔀 MERGING](bold purple)"
+bisect = "[🔍 BISECTING](bold cyan)"
+
+[nodejs]
+symbol = " "
+style = "bold green"
+format = "[$symbol($version )]($style)"
+detect_files = ["package.json", ".node-version", ".nvmrc"]
+
+[python]
+symbol = " "
+style = "bold yellow"
+format = "[$symbol($version )]($style)"
+detect_files = ["requirements.txt", "pyproject.toml", "Pipfile", ".python-version"]
+
+[swift]
+symbol = " "
+style = "bold #FF6B35"
+format = "[$symbol($version )]($style)"
+detect_files = ["Package.swift", "*.xcodeproj", "*.xcworkspace"]
+detect_folders = ["*.xcodeproj", "*.xcworkspace"]
+
+[rust]
+symbol = "🦀 "
+style = "bold #DEA584"
+format = "[$symbol($version )]($style)"
+
+[golang]
+symbol = " "
+style = "bold #00ADD8"
+format = "[$symbol($version )]($style)"
+
+[docker_context]
+symbol = "🐳 "
+style = "bold #0DB7ED"
+format = "[$symbol$context]($style) "
+only_with_files = true
+
+[package]
+symbol = "📦 "
+style = "bold #CB3837"
+format = "[$symbol$version]($style) "
+display_private = false
+
+[cmd_duration]
+min_time = 2_000
+style = "bold #666666"
+format = "[⏱ $duration]($style) "
+show_milliseconds = false
+
+[jobs]
+symbol = "⚙️"
+style = "bold blue"
+format = "[$symbol$number]($style) "
+
+[time]
+disabled = false
+format = "[$time]($style)"
+style = "dimmed white"
+time_format = "%H:%M"
+
+[line_break]
+disabled = false
+
+# Custom modules for project detection
+[custom.project_icon]
+command = """
+case "$PWD" in
+  *Leavn*) echo "💜" ;;
+  *hubdash*) echo "🌊" ;;
+  *sigstack*) echo "⚡" ;;
+  *overnight*) echo "🌙" ;;
+  *media*) echo "🎬" ;;
+  *Scripts*) echo "🧪" ;;
+  *tip-wsig*) echo "💰" ;;
+  *Modcaster*) echo "🎙️" ;;
+  *.claude*) echo "🤖" ;;
+  *) echo "" ;;
+esac
+"""
+when = "true"
+format = "[$output]($style)"
+style = "bold"
+shell = ["bash", "--noprofile", "--norc"]
+
+# ═══════════════════════════════════════════════════════════════════
+# Synesthesia Color Reference (wsig's grapheme-color mapping)
+# ═══════════════════════════════════════════════════════════════════
+# Project backgrounds (dark, muted - for terminal BG)
+# 💜 Leavn      = #241c30 (deep lavender)
+# 🌊 HubDash    = #141f29 (deep teal)
+# ⚡ SigStack   = #1f1a14 (warm amber)
+# 🌙 Overnight  = #140f1f (deep violet)
+# 🎬 Media      = #24141a (rose burgundy)
+# 🧪 Scripts    = #0f1f14 (matrix green)
+# 💰 Tip        = #1a1f0f (money lime)
+# 🎙️ Modcaster  = #291424 (podcast magenta)
+# 🤖 Claude     = #1f170f (terracotta)
+# 🔄 n8n        = #1c140f (workflow brown)
+# 🧠 BRAIN      = #141c23 (neural blue)
+# 🚀 Catalyst   = #121c29 (navy)
+#
+# Accent colors (bright, for text/highlights)
+# Primary      = #e08151 (terracotta accent)
+# Success      = #8cb369 (growth green)
+# Warning      = #d4a93a (amber)
+# Error        = #cc6666 (muted red)
+# Info         = #7aa2c9 (soft blue)
+# Structure    = #9d8ec2 (lavender)

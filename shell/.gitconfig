@@ -22,3 +22,80 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+
+# ═══════════════════════════════════════════════════════════════════
+# Delta - Synesthesia Color System for Git Diffs
+# ═══════════════════════════════════════════════════════════════════
+# Colors mapped to wsig's grapheme-color synesthesia palette
+[core]
+    pager = delta
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true
+    side-by-side = true
+    line-numbers = true
+    syntax-theme = gruvbox-dark
+    dark = true
+
+    # File headers - Claude terracotta (warm, inviting)
+    file-style = bold "#e08151"
+    file-decoration-style = "#e08151" ul
+
+    # Hunk headers - Leavn lavender (structure, organization)
+    hunk-header-style = bold "#9d8ec2"
+    hunk-header-decoration-style = "#6b5a8e" box
+
+    # Minus (removed) - Muted burgundy (like Media project)
+    minus-style = syntax "#2d1a1f"
+    minus-emph-style = syntax bold "#4d2a2f"
+
+    # Plus (added) - SigStack amber-green blend (growth)
+    plus-style = syntax "#1a2d1f"
+    plus-emph-style = syntax bold "#2a4d2f"
+
+    # Line numbers - synesthesia-aligned
+    line-numbers = true
+    line-numbers-minus-style = "#cc6666"
+    line-numbers-plus-style = "#8cb369"
+    line-numbers-zero-style = "#555555"
+
+    # Blame
+    blame-palette = "#1f1a14" "#241c30" "#142028" "#1f0f1f" "#141f28"
+
+    # Commit info
+    commit-style = bold "#e08151"
+    commit-decoration-style = "#e08151" box
+
+[merge]
+    conflictstyle = diff3
+
+[diff]
+    colorMoved = default
+
+# ═══════════════════════════════════════════════════════════════════
+# Git Colors - Synesthesia Palette
+# ═══════════════════════════════════════════════════════════════════
+[color]
+    ui = auto
+
+[color "branch"]
+    current = bold magenta
+    local = cyan
+    remote = yellow
+
+[color "status"]
+    added = green bold
+    changed = yellow
+    untracked = cyan
+    deleted = red bold
+    branch = magenta bold
+
+[color "diff"]
+    meta = "#e08151" bold
+    frag = magenta bold
+    old = red
+    new = green
+    whitespace = red reverse
