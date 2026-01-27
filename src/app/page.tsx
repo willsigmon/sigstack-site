@@ -133,12 +133,20 @@ const coreStack = [
     highlight: true,
   },
   {
-    name: "Omi + Fieldy",
+    name: "Omi",
     description: "AI wearable memory",
     logo: "/icons/omi.png",
     bgColor: "bg-gradient-to-br from-emerald-500/30 to-teal-500/40",
     glowColor: "#10B981",
     url: "https://www.omi.me/?ref=WILLSIGMON",
+  },
+  {
+    name: "Letta",
+    description: "Cross-session memory",
+    logo: "https://cdn.simpleicons.org/openai/10B981",
+    bgColor: "bg-gradient-to-br from-teal-500/30 to-cyan-500/40",
+    glowColor: "#14B8A6",
+    url: "https://letta.com",
   },
 ];
 
@@ -150,14 +158,6 @@ const voiceStack = [
     bgColor: "bg-gradient-to-br from-blue-500/30 to-indigo-500/40",
     glowColor: "#3B82F6",
     url: "https://www.typeless.com/?via=wsig",
-  },
-  {
-    name: "Wispr Flow",
-    description: "Voice-to-code",
-    logo: "https://cdn.prod.website-files.com/682f84b3838c89f8ff7667db/68d427f5e3a837706e390bde_logo-symbol-light.png",
-    bgColor: "bg-gradient-to-br from-violet-500/30 to-purple-500/40",
-    glowColor: "#8B5CF6",
-    url: "https://wisprflow.ai/r?WILL48",
   },
 ];
 
@@ -239,16 +239,17 @@ const mcpServers = [
   { name: "GitHub", purpose: "PRs & issues" },
   { name: "Vercel", purpose: "Deploy" },
   { name: "Supabase", purpose: "Database" },
+  { name: "Letta", purpose: "Cross-session memory" },
+  { name: "Context7", purpose: "Library docs" },
   { name: "n8n", purpose: "Workflows" },
   { name: "Memory", purpose: "Knowledge graph" },
-  { name: "Wsiglog", purpose: "Life data" },
   { name: "Puppeteer", purpose: "Browser" },
-  { name: "Glif", purpose: "AI images" },
+  { name: "Playwright", purpose: "Web automation" },
+  { name: "Chrome DevTools", purpose: "Browser debug" },
+  { name: "Repomix", purpose: "Codebase analysis" },
   { name: "Xcode", purpose: "iOS builds" },
   { name: "Calendar", purpose: "Events" },
-  { name: "Clipboard", purpose: "Copy/paste" },
-  { name: "Filesystem", purpose: "File access" },
-  { name: "Chrome", purpose: "Web automation" },
+  { name: "SQLite", purpose: "Local database" },
   { name: "Omi", purpose: "Wearable memory" },
 ];
 
@@ -799,7 +800,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-zinc-400 mb-12"
           >
-            89 skills · 24 commands · iOS bundle + Apple&apos;s hidden docs · Ready to clone
+            88 skills · 24 commands · 16 MCP servers · Letta cross-session memory · Ready to clone
           </motion.p>
 
           {/* Colorful Stats */}
@@ -810,9 +811,9 @@ export default function Home() {
             className="flex justify-center gap-6 sm:gap-10 md:gap-16 mb-10 sm:mb-14"
           >
             {[
-              { label: "Skills", value: "89", gradient: "from-blue-400 to-cyan-300" },
+              { label: "Skills", value: "88", gradient: "from-blue-400 to-cyan-300" },
               { label: "Commands", value: "24", gradient: "from-green-400 to-emerald-300" },
-              { label: "MCP Servers", value: "26", gradient: "from-purple-400 to-pink-300" },
+              { label: "MCP Servers", value: "16", gradient: "from-purple-400 to-pink-300" },
             ].map((stat) => (
               <motion.div
                 key={stat.label}
@@ -966,16 +967,17 @@ export default function Home() {
               <div>
                 <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3">Voice-First Workflow</h3>
                 <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">
-                  Omi captures conversations and sends them to Fieldy for organization. Typeless converts
-                  natural speech directly into formatted prompts. Wispr Flow handles voice-to-code with
-                  context awareness.
+                  Omi captures conversations and memories throughout the day. Typeless converts
+                  natural speech directly into formatted prompts. Voice input enables hands-free
+                  coding and ideation.
                 </p>
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3">Memory Persistence</h3>
                 <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">
-                  The Omi MCP server gives Claude access to conversation history and memories. Combined
-                  with the memory graph, sessions maintain continuity even after context resets.
+                  Letta Subconscious provides cross-session memory that survives context resets.
+                  Combined with Omi for conversation history and the memory graph, Claude maintains
+                  full continuity across sessions and devices.
                 </p>
               </div>
             </div>
@@ -1017,7 +1019,7 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
         <div className="grid gap-3 sm:gap-5 grid-cols-2 lg:grid-cols-4">
           {[
             {
-              title: "89 Skills",
+              title: "88 Skills",
               description: "iOS, audio/ML, debug, architecture, n8n workflows",
               gradient: "from-blue-500/30 to-cyan-500/30",
             },
@@ -1160,7 +1162,6 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
             {[
               { name: "Omi", url: "https://www.omi.me/?ref=WILLSIGMON", emoji: "🧠" },
               { name: "Typeless", url: "https://www.typeless.com/?via=wsig", emoji: "🎤" },
-              { name: "Wispr Flow", url: "https://wisprflow.ai/r?WILL48", emoji: "💨" },
               { name: "Tip the Creator", url: "https://tip.wsig.me", highlight: true, emoji: "☕" },
             ].map((item, i) => (
               <motion.a
