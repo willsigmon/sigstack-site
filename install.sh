@@ -43,17 +43,6 @@ else
     print_done "Node.js already installed ($(node --version))"
 fi
 
-# Install Ghostty (macOS only for now)
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    if ! command -v ghostty &> /dev/null; then
-        print_step "Installing Ghostty terminal..."
-        brew install ghostty
-        print_done "Ghostty installed"
-    else
-        print_done "Ghostty already installed"
-    fi
-fi
-
 # Install Claude Code CLI
 if ! command -v claude &> /dev/null; then
     print_step "Installing Claude Code CLI..."
@@ -86,8 +75,7 @@ echo "===================================="
 echo ""
 echo "What's installed:"
 echo "  • Claude Code CLI (primary AI tool)"
-echo "  • Ghostty terminal (fast, GPU-accelerated)"
-echo "  • 89 AI skills"
+echo "  • 83 AI skills"
 echo "  • 24 slash commands"
 echo "  • Token-saving hooks"
 echo "  • MCP server configs"

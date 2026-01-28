@@ -1,0 +1,7 @@
+{
+ "Profiles":[
+  {"Name":"OpenAI-Codex","BackgroundColor":"0.0549,0.1333,0.2510","ForegroundColor":"1,1,1","CursorColor":"0,1,0.666"},
+  {"Name":"Claude-Pink" ,"BackgroundColor":"0.176,0,0.117"      ,"ForegroundColor":"1,0.903,0.957","CursorColor":"1,0.31,0.616"},
+  {"Name":"Leavn-Wheat" ,"BackgroundColor":"0.953,0.925,0.815"  ,"ForegroundColor":"0.227,0.168,0.11","CursorColor":"0.643,0.521,1"}
+ ]
+}
