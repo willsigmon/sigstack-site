@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SigStack News</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #e4e4e7;">
+  <div style="max-width: 680px; margin: 0 auto; padding: 40px 20px;">
+
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 40px;">
+      <h1 style="font-size: 32px; margin: 0; background: linear-gradient(135deg, #f97316 0%, #ef4444 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+        SigStack News
+      </h1>
+      <p style="color: #a1a1aa; margin: 8px 0 0 0; font-size: 14px;">
+        {{DATE}} | AI & Tech Digest
+      </p>
+    </div>
+
+    <!-- Top Story -->
+    <div style="background: rgba(249, 115, 22, 0.1); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(249, 115, 22, 0.3);">
+      <span style="background: #f97316; color: #0f172a; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">
+        Top Story
+      </span>
+      <h2 style="margin: 12px 0 8px 0; font-size: 22px; color: #f4f4f5;">
+        {{TOP_STORY_TITLE}}
+      </h2>
+      <p style="margin: 0 0 12px 0; color: #d4d4d8; line-height: 1.6;">
+        {{TOP_STORY_SUMMARY}}
+      </p>
+      <a href="{{TOP_STORY_LINK}}" style="color: #f97316; text-decoration: none; font-weight: 500;">
+        Read more &rarr;
+      </a>
+    </div>
+
+    <!-- AI Updates Section -->
+    <div style="margin-bottom: 24px;">
+      <h3 style="margin: 0 0 16px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #818cf8;">
+        AI Updates
+      </h3>
+      {{AI_UPDATES}}
+    </div>
+
+    <!-- Dev Tools Section -->
+    <div style="margin-bottom: 24px;">
+      <h3 style="margin: 0 0 16px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #34d399;">
+        Dev Tools
+      </h3>
+      {{DEV_TOOLS}}
+    </div>
+
+    <!-- Quick Links -->
+    <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);">
+      <h3 style="margin: 0 0 16px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #a1a1aa;">
+        Worth Reading
+      </h3>
+      <ul style="margin: 0; padding: 0; list-style: none;">
+        {{QUICK_LINKS}}
+      </ul>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align: center; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
+      <p style="color: #71717a; font-size: 12px; margin: 0 0 8px 0;">
+        Curated by SigStack | Delivered via Resend
+      </p>
+      <a href="{{UNSUBSCRIBE_LINK}}" style="color: #a1a1aa; font-size: 12px;">Unsubscribe</a>
+    </div>
+
+  </div>
+</body>
+</html>

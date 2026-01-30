@@ -1,0 +1,48 @@
+{
+  "tech_apple": [
+    {"title": "9to5Mac", "url": "https://9to5mac.com/feed/"},
+    {"title": "MacRumors", "url": "http://feeds.macrumors.com/MacRumors-Front"},
+    {"title": "MacStories", "url": "https://www.macstories.net/feed/"},
+    {"title": "The Verge", "url": "https://www.theverge.com/rss/index.xml"},
+    {"title": "Daring Fireball", "url": "https://daringfireball.net/feeds/main"},
+    {"title": "Benjamin Mayo", "url": "https://bzamayo.com/index.atom"},
+    {"title": "The Sweet Setup", "url": "https://thesweetsetup.com/feed/"},
+    {"title": "Flexibits", "url": "https://flexibits.com/blog/feed/"},
+    {"title": "Darkroom Blog", "url": "https://darkroom.co/feed/atom.xml"},
+    {"title": "Tim Nahumck", "url": "https://nahumck.me/feed/"},
+    {"title": "Cord Cutters News", "url": "https://cordcuttersnews.com/feed/"},
+    {"title": "TmoNews", "url": "https://www.tmonews.com/feed/"},
+    {"title": "Platformer", "url": "https://www.platformer.news/feed"}
+  ],
+  "podcasts": [
+    {"title": "Podnews", "url": "https://podnews.net/rss"},
+    {"title": "Pod Hunters", "url": "https://www.theverge.com/rss/stream/16800845"}
+  ],
+  "food": [
+    {"title": "The Takeout", "url": "https://thetakeout.com/rss"},
+    {"title": "Brand Eating", "url": "https://www.brandeating.com/feeds/posts/default?alt=rss"},
+    {"title": "Chew Boom", "url": "https://www.chewboom.com/food-news/feed/"},
+    {"title": "Triangle Food Blog", "url": "https://trianglefoodblog.com/?feed=rss2"}
+  ],
+  "disney": [
+    {"title": "Disney Blog", "url": "https://feeds.feedburner.com/TheDisneyBlog"},
+    {"title": "Pixar Planet", "url": "https://pixarplanet.com/blog/feed/"},
+    {"title": "As The Bunny Hops", "url": "https://asthebunnyhops.com/category/disney/feed/"},
+    {"title": "Cruise Hive", "url": "https://www.cruisehive.com/feed"}
+  ],
+  "local_nc": [
+    {"title": "ITB Insider", "url": "https://www.itbinsider.com/feed/"},
+    {"title": "WRAL TechWire Fiber", "url": "https://wraltechwire.com/tag/fiber/feed/"},
+    {"title": "CBS17 Local News", "url": "https://www.cbs17.com/news/local-news/feed/"},
+    {"title": "r/Rolesville", "url": "https://www.reddit.com/r/Rolesville/.rss"},
+    {"title": "r/WakeForest", "url": "https://www.reddit.com/r/wakeforest/.rss"}
+  ],
+  "dev_tools": [
+    {"title": "Radarr Releases", "url": "https://github.com/Radarr/Radarr/releases.atom"},
+    {"title": "r/TestFlight", "url": "https://www.reddit.com/r/TestFlight/.rss"}
+  ],
+  "news": [
+    {"title": "BNO News", "url": "https://bnonews.com/index.php/feed/"},
+    {"title": "Tank Good News", "url": "https://tanksgoodnews.com/feed/"}
+  ]
+}
