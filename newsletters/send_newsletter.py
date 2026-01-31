@@ -2,6 +2,7 @@
 """
 SigStack Newsletter Sender
 Sends tips@ and news@ newsletters via Resend API
+Premium design with images and contextual insights
 """
 
 import os
@@ -23,7 +24,7 @@ NEWSLETTERS = {
     },
     "news": {
         "from": "SigStack News <news@sigstack.dev>",
-        "subject_prefix": "AI News Digest",
+        "subject_prefix": "The SigStack",
         "template": "news-template.html"
     }
 }
@@ -63,16 +64,96 @@ def send_email(to: list, newsletter_type: str, subject: str, variables: dict) ->
     response = requests.post(RESEND_API_URL, json=payload, headers=headers)
     return response.json()
 
+
+def build_story_image_html(image_url: str, alt: str = "") -> str:
+    """Build responsive image HTML for a story"""
+    if not image_url:
+        return ""
+    return f'''
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td>
+          <img src="{image_url}" alt="{alt}" width="580" style="width: 100%; max-width: 580px; height: auto; display: block; border-radius: 8px; border: 1px solid #262626;" />
+        </td>
+      </tr>
+    </table>
+    '''
+
+
+def build_story_item_html(item: dict, accent_color: str) -> str:
+    """Build HTML for a single story item with image support"""
+    image_html = ""
+    if item.get("image"):
+        image_html = f'''
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 12px;">
+          <tr>
+            <td width="100" style="vertical-align: top; padding-right: 16px;">
+              <img src="{item["image"]}" alt="" width="100" height="70" style="width: 100px; height: 70px; object-fit: cover; border-radius: 6px; display: block;" />
+            </td>
+            <td style="vertical-align: top;">
+              <a href="{item["link"]}" style="text-decoration: none;">
+                <p style="margin: 0 0 6px 0; font-size: 16px; color: #ffffff; font-weight: 500; line-height: 1.35; font-family: Georgia, serif;">{item["title"]}</p>
+              </a>
+              <p style="margin: 0; font-size: 13px; color: #a3a3a3; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">{item["summary"]}</p>
+            </td>
+          </tr>
+        </table>
+        '''
+    else:
+        # No image - simple text layout
+        image_html = f'''
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 16px; border-bottom: 1px solid #1f1f1f; padding-bottom: 16px;">
+          <tr>
+            <td>
+              <a href="{item["link"]}" style="text-decoration: none;">
+                <p style="margin: 0 0 6px 0; font-size: 17px; color: #ffffff; font-weight: 400; line-height: 1.35; font-family: Georgia, serif;">{item["title"]}</p>
+              </a>
+              <p style="margin: 0 0 8px 0; font-size: 14px; color: #a3a3a3; line-height: 1.55; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">{item["summary"]}</p>
+              <a href="{item["link"]}" style="color: {accent_color}; font-size: 12px; text-decoration: none; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">Read more &rarr;</a>
+            </td>
+          </tr>
+        </table>
+        '''
+    return image_html
+
+
 def send_tips_newsletter(to: list, tip_data: dict) -> dict:
-    """Send a tips newsletter"""
+    """Send a tips newsletter with premium design"""
+
+    # Build quick tips HTML (table-based)
+    quick_tips_html = ""
+    for i, tip in enumerate(tip_data.get("quick_tips", [])):
+        border_style = "border-bottom: 1px solid #1f1f1f;" if i < len(tip_data.get("quick_tips", [])) - 1 else ""
+        quick_tips_html += f'''
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="{border_style} margin-bottom: 12px; padding-bottom: 12px;">
+          <tr>
+            <td width="24" style="vertical-align: top; padding-top: 2px;">
+              <span style="color: #fbbf24; font-size: 14px;">&#x2022;</span>
+            </td>
+            <td style="vertical-align: top;">
+              <p style="margin: 0; font-size: 15px; color: #d4d4d4; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">{tip}</p>
+            </td>
+          </tr>
+        </table>
+        '''
+
+    # Generate preheader
+    preheader = tip_data.get("preheader", f"{tip_data.get('emoji', '')} {tip_data.get('title', '')}")
+
+    # Generate intro text
+    intro_text = tip_data.get("intro_text", "One actionable technique to level up your workflow. No fluff, just signal.")
+
     variables = {
         "DATE": datetime.now().strftime("%B %d, %Y"),
+        "PREHEADER": preheader,
+        "INTRO_TEXT": intro_text,
         "ISSUE_NUMBER": tip_data.get("issue_number", "001"),
         "TIP_EMOJI": tip_data.get("emoji", ""),
         "TIP_TITLE": tip_data.get("title", ""),
         "TIP_DESCRIPTION": tip_data.get("description", ""),
+        "TIP_PAYOFF": tip_data.get("payoff", "You'll work faster with less cognitive overhead."),
         "CODE_EXAMPLE": tip_data.get("code", ""),
-        "QUICK_TIPS": "\n".join([f"<li>{tip}</li>" for tip in tip_data.get("quick_tips", [])]),
+        "QUICK_TIPS": quick_tips_html,
         "TOOL_NAME": tip_data.get("tool_name", ""),
         "TOOL_DESCRIPTION": tip_data.get("tool_description", ""),
         "TOOL_LINK": tip_data.get("tool_link", "#"),
@@ -81,46 +162,56 @@ def send_tips_newsletter(to: list, tip_data: dict) -> dict:
 
     return send_email(to, "tips", tip_data.get("title", "Weekly Tip"), variables)
 
+
 def send_news_newsletter(to: list, news_data: dict) -> dict:
-    """Send a news newsletter"""
+    """Send a news newsletter with premium design"""
+
+    # Build top story image
+    top_story_image = build_story_image_html(
+        news_data.get("top_story", {}).get("image", ""),
+        news_data.get("top_story", {}).get("title", "")
+    )
 
     # Build AI updates HTML
     ai_updates_html = ""
     for item in news_data.get("ai_updates", []):
-        ai_updates_html += f'''
-        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; margin-bottom: 12px; border-left: 3px solid #818cf8;">
-            <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #f4f4f5;">{item["title"]}</h4>
-            <p style="margin: 0; color: #a1a1aa; font-size: 14px; line-height: 1.5;">{item["summary"]}</p>
-            <a href="{item["link"]}" style="color: #818cf8; font-size: 13px; text-decoration: none;">Read more</a>
-        </div>
-        '''
+        ai_updates_html += build_story_item_html(item, "#a78bfa")
 
     # Build dev tools HTML
     dev_tools_html = ""
     for item in news_data.get("dev_tools", []):
-        dev_tools_html += f'''
-        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; margin-bottom: 12px; border-left: 3px solid #34d399;">
-            <h4 style="margin: 0 0 8px 0; font-size: 16px; color: #f4f4f5;">{item["title"]}</h4>
-            <p style="margin: 0; color: #a1a1aa; font-size: 14px; line-height: 1.5;">{item["summary"]}</p>
-            <a href="{item["link"]}" style="color: #34d399; font-size: 13px; text-decoration: none;">Check it out</a>
-        </div>
-        '''
+        dev_tools_html += build_story_item_html(item, "#4ade80")
 
     # Build quick links HTML
     quick_links_html = ""
-    for item in news_data.get("quick_links", []):
+    for i, item in enumerate(news_data.get("quick_links", [])):
+        border_style = "border-bottom: 1px solid #262626;" if i < len(news_data.get("quick_links", [])) - 1 else ""
         quick_links_html += f'''
-        <li style="margin-bottom: 12px;">
-            <a href="{item["link"]}" style="color: #f4f4f5; text-decoration: none; font-weight: 500;">{item["title"]}</a>
-            <span style="color: #71717a; font-size: 13px;"> - {item["source"]}</span>
-        </li>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="{border_style} margin-bottom: 14px; padding-bottom: 14px;">
+          <tr>
+            <td>
+              <a href="{item["link"]}" style="color: #ffffff; text-decoration: none; font-size: 15px; font-family: Georgia, serif; line-height: 1.4;">{item["title"]}</a>
+              <p style="color: #525252; font-size: 12px; margin: 4px 0 0 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">{item["source"]}</p>
+            </td>
+          </tr>
+        </table>
         '''
 
+    # Generate intro text
+    intro_text = news_data.get("intro_text", "Here's what caught our attention today — the stories shaping tech, AI, and the tools we use to build.")
+
+    # Generate preheader (email preview text)
+    preheader = news_data.get("preheader", news_data.get("top_story", {}).get("title", "Your daily digest"))
+
     variables = {
-        "DATE": datetime.now().strftime("%B %d, %Y"),
+        "DATE": datetime.now().strftime("%A, %B %d, %Y"),
+        "PREHEADER": preheader,
+        "INTRO_TEXT": intro_text,
+        "TOP_STORY_IMAGE": top_story_image,
         "TOP_STORY_TITLE": news_data.get("top_story", {}).get("title", ""),
         "TOP_STORY_SUMMARY": news_data.get("top_story", {}).get("summary", ""),
         "TOP_STORY_LINK": news_data.get("top_story", {}).get("link", "#"),
+        "TOP_STORY_INSIGHT": news_data.get("top_story", {}).get("insight", "This development could reshape how we interact with technology in the coming months."),
         "AI_UPDATES": ai_updates_html,
         "DEV_TOOLS": dev_tools_html,
         "QUICK_LINKS": quick_links_html,
@@ -141,47 +232,78 @@ if __name__ == "__main__":
     recipient = sys.argv[2] if len(sys.argv) > 2 else "wjsigmon@gmail.com"
 
     if newsletter_type == "tips":
-        # Example tips content
+        # Premium example tips content
         result = send_tips_newsletter(
             to=[recipient],
             tip_data={
                 "issue_number": "001",
+                "intro_text": "One pattern that changed how I build with AI. Copy it, adapt it, ship faster.",
                 "emoji": "🚀",
                 "title": "Parallel Agent Swarms in Claude Code",
-                "description": "Stop waiting for sequential tasks. Spawn 5-20 agents in parallel to search, analyze, and transform your codebase simultaneously.",
-                "code": "# Spawn parallel agents in one message\nTask(subagent_type='Explore', prompt='Find auth')\nTask(subagent_type='Explore', prompt='Find API')",
+                "description": "Most developers run AI tasks sequentially — ask one question, wait, ask another. But Claude Code can spawn 5-20 agents in parallel, each searching, analyzing, or transforming different parts of your codebase simultaneously.",
+                "payoff": "A task that takes 10 sequential API calls completes in the time of one. Your feedback loop shrinks from minutes to seconds.",
+                "code": """# Launch 3 agents in parallel with a single message
+# Each explores a different subsystem
+
+Task(subagent_type='Explore',
+     prompt='Find all authentication handlers')
+
+Task(subagent_type='Explore',
+     prompt='Map the API route structure')
+
+Task(subagent_type='Explore',
+     prompt='Identify database models')""",
                 "quick_tips": [
-                    "Use Haiku for quick searches, Sonnet for complex tasks",
-                    "PreToolUse hooks can block wasteful operations",
-                    "Skills take priority over manual code"
+                    "Use Haiku ($0.25/M tokens) for quick searches, Sonnet for complex reasoning",
+                    "PreToolUse hooks can block expensive operations before they run",
+                    "The /skill command loads specialized behaviors without writing prompts"
                 ],
                 "tool_name": "Resend",
-                "tool_description": "Modern email API for developers. Simple REST API, React Email support, and great deliverability.",
+                "tool_description": "The email API that doesn't make you want to cry. Clean REST endpoints, React Email components for templates, and deliverability that actually works. Free tier is generous enough for side projects.",
                 "tool_link": "https://resend.com"
             }
         )
         print(f"Tips newsletter sent: {result}")
 
     elif newsletter_type == "news":
-        # Example news content
+        # Premium example news content with images
         result = send_news_newsletter(
             to=[recipient],
             news_data={
+                "intro_text": "Good morning. Claude's most capable model yet just dropped, and the implications for developers are significant. Here's what you need to know.",
                 "top_story": {
-                    "title": "Claude Opus 4.5 Released",
-                    "summary": "Anthropic releases their most capable model yet, with improved reasoning and agentic capabilities.",
-                    "link": "https://anthropic.com"
+                    "title": "Claude Opus 4.5 Brings Extended Thinking to Agentic Workflows",
+                    "summary": "Anthropic's latest release combines the reasoning power of extended thinking with autonomous agent capabilities. Early benchmarks show 40% improvement on complex coding tasks compared to previous models.",
+                    "insight": "For developers building AI-powered tools, this shifts the calculus on what's possible to automate. Tasks that previously required human oversight may now be fully delegable.",
+                    "link": "https://anthropic.com",
+                    "image": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=580&h=320&fit=crop&auto=format"
                 },
                 "ai_updates": [
-                    {"title": "GPT-5 Rumors", "summary": "OpenAI reportedly training next-gen model", "link": "#"},
-                    {"title": "Google Gemini 2.0", "summary": "New multimodal capabilities announced", "link": "#"}
+                    {
+                        "title": "OpenAI Teases GPT-5 Architecture Changes",
+                        "summary": "Internal documents suggest a shift toward mixture-of-experts models with specialized reasoning modules.",
+                        "link": "#",
+                        "image": ""
+                    },
+                    {
+                        "title": "Google's Gemini 2.0 Enters Private Beta",
+                        "summary": "New multimodal capabilities include real-time video understanding and improved long-context performance.",
+                        "link": "#",
+                        "image": ""
+                    }
                 ],
                 "dev_tools": [
-                    {"title": "Cursor AI Updates", "summary": "New agent mode for autonomous coding", "link": "#"}
+                    {
+                        "title": "Cursor Ships Agent Mode for Autonomous Coding",
+                        "summary": "The AI code editor now supports multi-file refactoring without manual intervention.",
+                        "link": "#",
+                        "image": ""
+                    }
                 ],
                 "quick_links": [
-                    {"title": "The State of AI 2025", "source": "Pragmatic Engineer", "link": "#"},
-                    {"title": "Building AI Agents", "source": "Lenny's Newsletter", "link": "#"}
+                    {"title": "The State of AI Infrastructure in 2025", "source": "Pragmatic Engineer", "link": "#"},
+                    {"title": "Why Every PM Should Learn to Prompt", "source": "Lenny's Newsletter", "link": "#"},
+                    {"title": "Building Reliable AI Agents", "source": "Simon Willison", "link": "#"}
                 ]
             }
         )

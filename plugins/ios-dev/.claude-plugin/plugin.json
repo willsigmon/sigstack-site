@@ -1,0 +1,8 @@
+{
+  "name": "ios-dev",
+  "version": "1.0.0",
+  "description": "iOS development toolkit - Swift, SwiftUI, Xcode, CloudKit, SwiftData",
+  "author": {
+    "name": "wsig"
+  }
+}

@@ -3,71 +3,223 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
   <title>SigStack News</title>
+  <!--[if mso]>
+  <style type="text/css">
+    body, table, td {font-family: Georgia, serif !important;}
+    .sans {font-family: Arial, sans-serif !important;}
+  </style>
+  <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #e4e4e7;">
-  <div style="max-width: 680px; margin: 0 auto; padding: 40px 20px;">
+<body style="margin: 0; padding: 0; font-family: Georgia, 'Times New Roman', Times, serif; background-color: #0a0a0a; color: #e5e5e5; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
 
-    <!-- Header -->
-    <div style="text-align: center; margin-bottom: 40px;">
-      <h1 style="font-size: 32px; margin: 0; background: linear-gradient(135deg, #f97316 0%, #ef4444 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-        SigStack News
-      </h1>
-      <p style="color: #a1a1aa; margin: 8px 0 0 0; font-size: 14px;">
-        {{DATE}} | AI & Tech Digest
-      </p>
-    </div>
-
-    <!-- Top Story -->
-    <div style="background: rgba(249, 115, 22, 0.1); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(249, 115, 22, 0.3);">
-      <span style="background: #f97316; color: #0f172a; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">
-        Top Story
-      </span>
-      <h2 style="margin: 12px 0 8px 0; font-size: 22px; color: #f4f4f5;">
-        {{TOP_STORY_TITLE}}
-      </h2>
-      <p style="margin: 0 0 12px 0; color: #d4d4d8; line-height: 1.6;">
-        {{TOP_STORY_SUMMARY}}
-      </p>
-      <a href="{{TOP_STORY_LINK}}" style="color: #f97316; text-decoration: none; font-weight: 500;">
-        Read more &rarr;
-      </a>
-    </div>
-
-    <!-- AI Updates Section -->
-    <div style="margin-bottom: 24px;">
-      <h3 style="margin: 0 0 16px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #818cf8;">
-        AI Updates
-      </h3>
-      {{AI_UPDATES}}
-    </div>
-
-    <!-- Dev Tools Section -->
-    <div style="margin-bottom: 24px;">
-      <h3 style="margin: 0 0 16px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #34d399;">
-        Dev Tools
-      </h3>
-      {{DEV_TOOLS}}
-    </div>
-
-    <!-- Quick Links -->
-    <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);">
-      <h3 style="margin: 0 0 16px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #a1a1aa;">
-        Worth Reading
-      </h3>
-      <ul style="margin: 0; padding: 0; list-style: none;">
-        {{QUICK_LINKS}}
-      </ul>
-    </div>
-
-    <!-- Footer -->
-    <div style="text-align: center; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
-      <p style="color: #71717a; font-size: 12px; margin: 0 0 8px 0;">
-        Curated by SigStack | Delivered via Resend
-      </p>
-      <a href="{{UNSUBSCRIBE_LINK}}" style="color: #a1a1aa; font-size: 12px;">Unsubscribe</a>
-    </div>
-
+  <!-- Preheader (hidden preview text) -->
+  <div style="display: none; max-height: 0; overflow: hidden;">
+    {{PREHEADER}} &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
   </div>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#0a0a0a" style="background-color: #0a0a0a;">
+    <tr>
+      <td align="center" style="padding: 48px 20px;">
+
+        <!-- Main Container -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="580" style="max-width: 580px; width: 100%;">
+
+          <!-- Masthead -->
+          <tr>
+            <td align="center" style="padding-bottom: 48px; border-bottom: 1px solid #262626;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center">
+                    <p style="margin: 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #525252; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">The</p>
+                    <h1 style="margin: 4px 0 0 0; font-size: 42px; font-weight: 400; color: #ffffff; letter-spacing: -1px;">
+                      SigStack<span style="color: #ff6b35;">.</span>
+                    </h1>
+                    <p style="margin: 8px 0 0 0; font-size: 13px; color: #737373; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; letter-spacing: 0.5px;">
+                      {{DATE}}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Editor's Note / Intro -->
+          <tr>
+            <td style="padding: 40px 0;">
+              <p style="margin: 0; font-size: 18px; line-height: 1.7; color: #d4d4d4; font-style: italic;">
+                {{INTRO_TEXT}}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Top Story -->
+          <tr>
+            <td style="padding-bottom: 48px;">
+              <!-- Image -->
+              {{TOP_STORY_IMAGE}}
+
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="padding-top: 20px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td bgcolor="#ff6b35" style="background-color: #ff6b35; padding: 4px 12px; border-radius: 2px;">
+                          <span style="color: #000000; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">Lead Story</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 16px;">
+                    <a href="{{TOP_STORY_LINK}}" style="text-decoration: none;">
+                      <h2 style="margin: 0; font-size: 28px; font-weight: 400; color: #ffffff; line-height: 1.25; letter-spacing: -0.5px;">
+                        {{TOP_STORY_TITLE}}
+                      </h2>
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 16px;">
+                    <p style="margin: 0; font-size: 17px; line-height: 1.65; color: #a3a3a3;">
+                      {{TOP_STORY_SUMMARY}}
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 16px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#171717" style="background-color: #171717; border-radius: 6px; border-left: 3px solid #ff6b35;">
+                      <tr>
+                        <td style="padding: 14px 16px;">
+                          <p style="margin: 0; font-size: 14px; color: #d4d4d4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.5;">
+                            <strong style="color: #ff6b35;">Why it matters:</strong> {{TOP_STORY_INSIGHT}}
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top: 20px;">
+                    <a href="{{TOP_STORY_LINK}}" style="color: #ff6b35; text-decoration: none; font-size: 14px; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; letter-spacing: 0.3px;">
+                      Continue reading &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding-bottom: 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td bgcolor="#262626" height="1" style="font-size: 1px; line-height: 1px;">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- AI & Tech Section -->
+          <tr>
+            <td style="padding-bottom: 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="padding-bottom: 24px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-size: 20px; padding-right: 12px;">&#x1F916;</td>
+                        <td>
+                          <h3 style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: #a78bfa; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            AI & Tech
+                          </h3>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    {{AI_UPDATES}}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Dev Tools Section -->
+          <tr>
+            <td style="padding-bottom: 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="padding-bottom: 24px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-size: 20px; padding-right: 12px;">&#x1F6E0;</td>
+                        <td>
+                          <h3 style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: #4ade80; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            Dev Tools
+                          </h3>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    {{DEV_TOOLS}}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Quick Links Section -->
+          <tr>
+            <td style="padding-bottom: 48px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#141414" style="background-color: #141414; border-radius: 8px;">
+                <tr>
+                  <td style="padding: 28px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 20px;">
+                      <tr>
+                        <td style="font-size: 18px; padding-right: 10px;">&#x1F517;</td>
+                        <td>
+                          <h3 style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: #737373; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            Worth Your Time
+                          </h3>
+                        </td>
+                      </tr>
+                    </table>
+                    {{QUICK_LINKS}}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="border-top: 1px solid #262626; padding-top: 32px;" align="center">
+              <p style="margin: 0 0 4px 0; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #525252; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                Curated by
+              </p>
+              <p style="margin: 0 0 16px 0; font-size: 18px; color: #737373;">
+                SigStack<span style="color: #ff6b35;">.</span>
+              </p>
+              <p style="margin: 0 0 20px 0; font-size: 12px; color: #525252; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                Delivered via Resend
+              </p>
+              <a href="{{UNSUBSCRIBE_LINK}}" style="color: #737373; font-size: 12px; text-decoration: underline; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">Unsubscribe</a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>

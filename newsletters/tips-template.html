@@ -3,68 +3,184 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
   <title>SigStack Tips</title>
+  <!--[if mso]>
+  <style type="text/css">
+    body, table, td {font-family: Georgia, serif !important;}
+    .sans {font-family: Arial, sans-serif !important;}
+    .mono {font-family: Consolas, monospace !important;}
+  </style>
+  <![endif]-->
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e4e4e7;">
-  <div style="max-width: 680px; margin: 0 auto; padding: 40px 20px;">
+<body style="margin: 0; padding: 0; font-family: Georgia, 'Times New Roman', Times, serif; background-color: #0a0a0a; color: #e5e5e5; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
 
-    <!-- Header -->
-    <div style="text-align: center; margin-bottom: 40px;">
-      <h1 style="font-size: 32px; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-        SigStack Tips
-      </h1>
-      <p style="color: #a1a1aa; margin: 8px 0 0 0; font-size: 14px;">
-        {{DATE}} | Issue #{{ISSUE_NUMBER}}
-      </p>
-    </div>
-
-    <!-- Main Tip Card -->
-    <div style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);">
-      <div style="display: flex; align-items: center; margin-bottom: 16px;">
-        <span style="font-size: 24px; margin-right: 12px;">{{TIP_EMOJI}}</span>
-        <h2 style="margin: 0; font-size: 20px; color: #f4f4f5;">{{TIP_TITLE}}</h2>
-      </div>
-      <p style="margin: 0 0 16px 0; line-height: 1.6; color: #d4d4d8;">
-        {{TIP_DESCRIPTION}}
-      </p>
-
-      <!-- Code Block -->
-      <div style="background: #0d1117; border-radius: 8px; padding: 16px; font-family: 'SF Mono', Monaco, monospace; font-size: 13px; overflow-x: auto; border: 1px solid #30363d;">
-        <pre style="margin: 0; color: #c9d1d9;">{{CODE_EXAMPLE}}</pre>
-      </div>
-    </div>
-
-    <!-- Quick Tips Section -->
-    <div style="background: rgba(102, 126, 234, 0.1); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(102, 126, 234, 0.2);">
-      <h3 style="margin: 0 0 16px 0; font-size: 16px; color: #818cf8;">
-        Quick Wins
-      </h3>
-      <ul style="margin: 0; padding: 0 0 0 20px; color: #d4d4d8; line-height: 1.8;">
-        {{QUICK_TIPS}}
-      </ul>
-    </div>
-
-    <!-- Tool Spotlight -->
-    <div style="background: rgba(52, 211, 153, 0.1); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid rgba(52, 211, 153, 0.2);">
-      <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #34d399;">
-        Tool Spotlight: {{TOOL_NAME}}
-      </h3>
-      <p style="margin: 0; color: #d4d4d8; line-height: 1.6;">
-        {{TOOL_DESCRIPTION}}
-      </p>
-      <a href="{{TOOL_LINK}}" style="display: inline-block; margin-top: 12px; color: #34d399; text-decoration: none; font-weight: 500;">
-        Check it out &rarr;
-      </a>
-    </div>
-
-    <!-- Footer -->
-    <div style="text-align: center; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);">
-      <p style="color: #71717a; font-size: 12px; margin: 0 0 8px 0;">
-        You're receiving this because you subscribed to SigStack Tips
-      </p>
-      <a href="{{UNSUBSCRIBE_LINK}}" style="color: #a1a1aa; font-size: 12px;">Unsubscribe</a>
-    </div>
-
+  <!-- Preheader -->
+  <div style="display: none; max-height: 0; overflow: hidden;">
+    {{PREHEADER}} &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
   </div>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#0a0a0a" style="background-color: #0a0a0a;">
+    <tr>
+      <td align="center" style="padding: 48px 20px;">
+
+        <!-- Main Container -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="580" style="max-width: 580px; width: 100%;">
+
+          <!-- Masthead -->
+          <tr>
+            <td align="center" style="padding-bottom: 40px; border-bottom: 1px solid #262626;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center">
+                    <p style="margin: 0; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #525252; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">SigStack</p>
+                    <h1 style="margin: 4px 0 0 0; font-size: 36px; font-weight: 400; color: #ffffff; letter-spacing: -0.5px;">
+                      Tips<span style="color: #8b5cf6;">.</span>
+                    </h1>
+                    <p style="margin: 12px 0 0 0; font-size: 13px; color: #737373; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                      {{DATE}} &middot; Issue #{{ISSUE_NUMBER}}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Intro Quote -->
+          <tr>
+            <td style="padding: 40px 0 32px 0;">
+              <p style="margin: 0; font-size: 18px; line-height: 1.7; color: #d4d4d4; font-style: italic;">
+                {{INTRO_TEXT}}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Main Tip Card -->
+          <tr>
+            <td style="padding-bottom: 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#141414" style="background-color: #141414; border-radius: 12px; border-top: 4px solid #8b5cf6;">
+                <tr>
+                  <td style="padding: 32px;">
+                    <!-- Tip Header -->
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+                      <tr>
+                        <td style="font-size: 32px; padding-right: 16px; vertical-align: middle;">{{TIP_EMOJI}}</td>
+                        <td style="vertical-align: middle;">
+                          <h2 style="margin: 0; font-size: 24px; font-weight: 400; color: #ffffff; line-height: 1.3;">
+                            {{TIP_TITLE}}
+                          </h2>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Tip Description -->
+                    <p style="margin: 0 0 24px 0; font-size: 17px; line-height: 1.7; color: #a3a3a3;">
+                      {{TIP_DESCRIPTION}}
+                    </p>
+
+                    <!-- Why This Matters -->
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#1f1f1f" style="background-color: #1f1f1f; border-radius: 8px; border-left: 3px solid #8b5cf6; margin-bottom: 24px;">
+                      <tr>
+                        <td style="padding: 16px 20px;">
+                          <p style="margin: 0; font-size: 14px; color: #d4d4d4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.55;">
+                            <strong style="color: #8b5cf6;">The payoff:</strong> {{TIP_PAYOFF}}
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Code Block -->
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#0d1117" style="background-color: #0d1117; border-radius: 8px; border: 1px solid #30363d;">
+                      <tr>
+                        <td style="padding: 20px;">
+                          <pre style="margin: 0; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace; font-size: 13px; line-height: 1.6; color: #e6edf3; white-space: pre-wrap; word-wrap: break-word;">{{CODE_EXAMPLE}}</pre>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Quick Wins Section -->
+          <tr>
+            <td style="padding-bottom: 40px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="padding-bottom: 20px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="font-size: 18px; padding-right: 10px;">&#x26A1;</td>
+                        <td>
+                          <h3 style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: #fbbf24; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            Quick Wins
+                          </h3>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    {{QUICK_TIPS}}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Tool Spotlight -->
+          <tr>
+            <td style="padding-bottom: 48px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="#141414" style="background-color: #141414; border-radius: 12px;">
+                <tr>
+                  <td style="padding: 28px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 16px;">
+                      <tr>
+                        <td style="font-size: 18px; padding-right: 10px;">&#x1F9F0;</td>
+                        <td>
+                          <h3 style="margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: #4ade80; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                            Tool Spotlight
+                          </h3>
+                        </td>
+                      </tr>
+                    </table>
+                    <h4 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 400; color: #ffffff;">
+                      {{TOOL_NAME}}
+                    </h4>
+                    <p style="margin: 0 0 16px 0; font-size: 15px; color: #a3a3a3; line-height: 1.6;">
+                      {{TOOL_DESCRIPTION}}
+                    </p>
+                    <a href="{{TOOL_LINK}}" style="color: #4ade80; text-decoration: none; font-size: 14px; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                      Check it out &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="border-top: 1px solid #262626; padding-top: 32px;" align="center">
+              <p style="margin: 0 0 4px 0; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #525252; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                Curated by
+              </p>
+              <p style="margin: 0 0 16px 0; font-size: 18px; color: #737373;">
+                SigStack<span style="color: #8b5cf6;">.</span>
+              </p>
+              <p style="margin: 0 0 20px 0; font-size: 12px; color: #525252; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
+                Delivered via Resend
+              </p>
+              <a href="{{UNSUBSCRIBE_LINK}}" style="color: #737373; font-size: 12px; text-decoration: underline; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">Unsubscribe</a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>

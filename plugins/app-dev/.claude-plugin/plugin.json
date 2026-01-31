@@ -1,0 +1,8 @@
+{
+  "name": "app-dev",
+  "version": "1.0.0",
+  "description": "App development tools - features, audio, sync, ops, preferences",
+  "author": {
+    "name": "wsig"
+  }
+}
