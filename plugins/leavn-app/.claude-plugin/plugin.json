@@ -1,0 +1,8 @@
+{
+  "name": "leavn-app",
+  "version": "1.0.0",
+  "description": "Leavn app specific development tools for features, operations, audio, and preferences",
+  "author": {
+    "name": "wsig"
+  }
+}

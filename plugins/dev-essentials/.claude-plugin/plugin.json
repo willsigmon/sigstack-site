@@ -1,0 +1,8 @@
+{
+  "name": "dev-essentials",
+  "version": "1.0.0",
+  "description": "Cross-project tools including Glif, Resend, and performance utilities",
+  "author": {
+    "name": "wsig"
+  }
+}

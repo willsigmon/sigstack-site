@@ -1,0 +1,8 @@
+{
+  "name": "superclaude",
+  "version": "1.0.0",
+  "description": "Meta-orchestration plugin for spawning agents, analyzing code, troubleshooting, and coordinating development",
+  "author": {
+    "name": "wsig"
+  }
+}
