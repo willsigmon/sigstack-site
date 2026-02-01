@@ -995,7 +995,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-zinc-400 mb-12"
           >
-            88 skills · 24 commands · 16 MCP servers · Letta cross-session memory · Ready to clone
+            127 skills · 12 plugins · 16 MCP servers · AI Vision QA workflow · Ready to clone
           </motion.p>
 
           {/* Colorful Stats */}
@@ -1006,8 +1006,8 @@ export default function Home() {
             className="flex justify-center gap-6 sm:gap-10 md:gap-16 mb-10 sm:mb-14"
           >
             {[
-              { label: "Skills", value: "88", gradient: "from-blue-400 to-cyan-300" },
-              { label: "Commands", value: "24", gradient: "from-green-400 to-emerald-300" },
+              { label: "Skills", value: "127", gradient: "from-blue-400 to-cyan-300" },
+              { label: "Plugins", value: "12", gradient: "from-green-400 to-emerald-300" },
               { label: "MCP Servers", value: "16", gradient: "from-purple-400 to-pink-300" },
             ].map((stat) => (
               <motion.div
@@ -1214,13 +1214,13 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
         <div className="grid gap-3 sm:gap-5 grid-cols-2 lg:grid-cols-4">
           {[
             {
-              title: "88 Skills",
-              description: "iOS, audio/ML, debug, architecture, n8n workflows",
+              title: "127 Skills",
+              description: "iOS, SwiftUI, AI design, testing, voice, automation",
               gradient: "from-blue-500/30 to-cyan-500/30",
             },
             {
-              title: "24 Commands",
-              description: "/test, /build, /deploy, /analyze, /cleanup, /git",
+              title: "12 Plugins",
+              description: "sigstack-core, ios-dev, design-tools, testing, memory-ai",
               gradient: "from-green-500/30 to-emerald-500/30",
             },
             {
