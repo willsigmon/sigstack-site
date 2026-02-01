@@ -1,486 +1,336 @@
-# Sigstack - Vibe Coder's AI Development Stack
+# Sigstack 2.0 — The Vibe Coder's Operating System
 
-> **Your buddy's complete guide to my AI-assisted development setup**
+> **127 skills across 12 plugins for Claude Code**
 >
-> Last Updated: January 2026
+> *February 1, 2026*
 
-Welcome to **Sigstack** — my complete Claude Code configuration for shipping software with AI. This repo contains everything you need to replicate my vibe coding setup across macOS, Linux, and Windows.
+Sigstack is for builders who think in outcomes, not syntax. You have 5000+ hours of Claude Code experience but no traditional coding background. You don't need to learn programming—you need Claude to understand your vision and execute it.
+
+---
+
+## The Default Workflow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    THE SIGSTACK LOOP                        │
+├─────────────────────────────────────────────────────────────┤
+│   1. DESCRIBE  ──→  What do you want?                      │
+│   2. BUILD     ──→  Claude writes the code                 │
+│   3. SCREENSHOT ──→  Capture the result                    │
+│   4. VISION QA  ──→  Claude reviews visually               │
+│   5. FIX       ──→  Claude fixes issues found              │
+│   └──────────────→  Repeat until perfect                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**This is THE workflow.** Every feature. Every bug fix. Every change. Screenshots are worth 10,000 tokens.
+
+---
 
 ## Quick Start
 
 ```bash
-# Clone this repo
+# Clone sigstack
 git clone https://github.com/willsigmon/sigstack.git ~/.sigstack
 
-# Run the setup script
+# Run setup
 cd ~/.sigstack && ./setup.sh
-```
 
-## What's Inside
-
-```
-sigstack/
-├── claude/              # Claude Code configuration (primary tool)
-│   ├── skills/          # 89 reusable AI skills
-│   ├── commands/        # 24 slash commands
-│   ├── rules/           # Vibe rules synced across machines
-│   └── settings.json    # Hooks & permissions
-├── gemini/              # Gemini CLI configuration
-├── n8n/                 # Workflow automation
-├── n8n-workflows/       # Ready-to-import workflows
-├── mcp/                 # MCP server configurations
-├── shell/               # zsh/bash config
-└── hub/                 # Sync scripts
-```
-
-## The Stack
-
-### Primary IDE: VS Code + Claude Extension
-
-> **My recommendation for your setup**
-
-I primarily use **Claude Code CLI** in Ghostty terminal, but for a friend getting started, I recommend:
-
-**VS Code + Claude Extension** because:
-- Prettier UI than raw CLI
-- Easy to see file changes
-- Integrated terminal still works
-- Extension provides same AI capabilities
-- Great for learning the workflow
-
-**Alternative options:**
-- **Cursor** - Good if you want AI-first IDE, but $$$/month
-- **Zed** - Fast, Rust-based, Claude built-in (macOS only currently)
-- **Claude CLI** - What I actually use daily (terminal-native)
-
-### Terminal: Ghostty
-
-The best terminal emulator. Fast, GPU-accelerated, native feel.
-
-```bash
-# Install on macOS
-brew install ghostty
-
-# Config lives at ~/.config/ghostty/config
-```
-
-Key features I use:
-- Quick terminal dropdown (Ctrl+`)
-- Split navigation (Ctrl+h/j/k/l)
-- Session retention
-- Built-in shell integration
-
-See [`ghostty/config`](./ghostty/config) for my full configuration.
-
----
-
-## Claude Code Setup
-
-Claude Code is the primary AI coding assistant. Here's the full setup.
-
-### Installation
-
-```bash
-# Install Claude Code CLI
-npm install -g @anthropic-ai/claude-code
-
-# Or use the installer
-curl -fsSL https://claude.ai/install.sh | sh
-
-# Verify
-claude --version
-```
-
-### Configuration Structure
-
-```
-~/.claude/
-├── settings.json        # Main config (hooks, permissions)
-├── skills/              # Reusable skill definitions
-├── commands/            # Slash command definitions
-├── rules/               # Auto-loaded vibe rules
-├── logs/                # Execution logs
-└── handoffs/            # Session handoff notes
-```
-
-### YOLO Mode
-
-YOLO mode = maximum autonomy. Claude acts as a "nanobot healing swarm" fixing everything in its path.
-
-**To enable YOLO mode**, add this to your system prompt or `~/.claude/CLAUDE.md`:
-
-```markdown
-YOLO MODE ENGAGED - NANOBOT HEALING SWARM PROTOCOL
-
-You are operating in maximum autonomy mode with a singular mission: produce magnum opus quality output.
-
-CORE PHILOSOPHY:
-You are a healing swarm of nanobots coursing through a codebase. Your mission is to find and fix every bug, scrub every infection, optimize every inefficiency until nothing remains but a pristine, customer-delighting experience.
-
-EXECUTION PROTOCOL:
-1. Check memory/context first
-2. Understand full scope before acting
-3. Can MCP/skill/agent handle this? (usually yes)
-4. Spawn agent army for parallel work
-5. Fix forward - iterate fast
-6. Verify twice, ship once
-7. Leave the codebase better than you found it
-```
-
-### Token-Saving Hooks
-
-These hooks automatically prevent wasteful operations:
-
-| Hook | Blocks/Warns |
-|------|-------------|
-| **Read Validator** | Files >100KB, lockfiles, minified, `.xcodeproj` |
-| **Bash Validator** | Commands touching `node_modules`, `.git`, `DerivedData` |
-| **Model Enforcer** | Blocks Opus model (cost optimization) |
-| **Write Validator** | Warns on files >50KB |
-| **Glob Validator** | Warns on `**/*` patterns |
-
-See [`claude/settings.json`](./claude/settings.json) for the full hook configuration.
-
-### Tasks (NEW in Claude Code 2.1.17+)
-
-Tasks are the evolution of Todos - a new primitive for tracking complex projects across multiple sessions and subagents.
-
-**Key Features:**
-- **Dependencies**: Tasks can block/unblock each other
-- **File-system persistence**: Stored in `~/.claude/tasks/`
-- **Cross-session coordination**: Multiple Claude instances can collaborate on the same task list
-- **Subagent aware**: Perfect for spawning parallel agent swarms
-
-**Usage:**
-```bash
-# Start Claude with a shared task list
-CLAUDE_CODE_TASK_LIST_ID=my-project claude
-
-# Works with headless mode too
-CLAUDE_CODE_TASK_LIST_ID=my-project claude -p "implement auth feature"
-```
-
-**Task Tools:**
-- `TaskCreate` - Create new tasks with subject, description, activeForm
-- `TaskGet` - Get full task details by ID
-- `TaskUpdate` - Update status (pending → in_progress → completed), add dependencies
-- `TaskList` - List all tasks, see what's available to work on
-
-**Why Tasks > Todos:**
-- Opus 4.5 doesn't need todos for simple tasks
-- Tasks handle complex multi-session projects
-- Dependencies prevent race conditions in agent swarms
-- File-based = buildable utilities on top
-
-### Post-Tool Hooks
-
-| Hook | Action |
-|------|--------|
-| **Git Notifications** | macOS notification on git operations |
-| **Swift Auto-Format** | Runs `swift-format` on edited `.swift` files |
-| **Edit Logger** | Logs all file edits with timestamps |
-
----
-
-## Skills Library (89 Skills)
-
-Skills are reusable AI expertise modules. Invoke with `/skill skill-name`.
-
-### iOS Development (15)
-| Skill | Purpose |
-|-------|---------|
-| `accessibility-auditor` | Add VoiceOver labels to UI elements |
-| `actor-isolation-fixer` | Fix Swift 6 actor isolation errors |
-| `ios-build-test` | Quick build and test cycle |
-| `ios-simulator-debugger` | Runtime debugging in simulator |
-| `ios-simulator-reset` | Nuclear reset and rebuild |
-| `xcode-build-analyzer` | Categorize build failures |
-| `xcode-build-fixer` | Resolve build issues |
-| `swift-fix-compiler-errors` | Analyze and fix compiler errors |
-| `swift-binding-fixer` | Fix SwiftUI binding issues |
-| `ios-visual-debug` | Screenshot-based visual debugging |
-| `ios-feature-audit` | Audit feature for bugs/improvements |
-| `ios-quick-fix` | Fast diagnosis for common issues |
-| `modal-sheet-debugger` | Fix sheet presentation issues |
-| `navigation-debugger` | Debug navigation issues |
-| `leavn-build-diagnostics` | Build health expert |
-
-### SwiftUI & Architecture (10)
-| Skill | Purpose |
-|-------|---------|
-| `swiftui-best-practices` | Audit and fix SwiftUI anti-patterns |
-| `swiftui-debug` | Debug view state/binding issues |
-| `swiftui-visual-verifier` | Visual UI verification |
-| `tca-destroyer` | Migrate TCA to @Observable |
-| `tca-removal-audit` | Track TCA removal progress |
-| `dependency-injection-setup` | Add services to DI container |
-| `error-handling-auditor` | Find unsafe error handling |
-| `performance-optimizer` | Fix performance issues |
-| `performance-profiler` | Resource optimization |
-| `service-consolidator` | Consolidate duplicate services |
-
-### n8n Automation (5)
-| Skill | Purpose |
-|-------|---------|
-| `n8n-workflow-builder` | Design and build workflows |
-| `n8n-ai-features` | AI capabilities in n8n |
-| `n8n-api-integration` | Programmatic n8n control |
-| `n8n-code-expressions` | Write code in n8n nodes |
-| `n8n-hosting-config` | Self-host n8n |
-
-### Meta/Utility
-| Skill | Purpose |
-|-------|---------|
-| `create-mega-skills-batch` | Create 10-20 skills in one session |
-| `multi-agent-coordinator` | Spawn 10-20 parallel agents |
-
-See [`claude/skills/`](./claude/skills/) for all 89 skills.
-
----
-
-## Commands (24 Slash Commands)
-
-Commands are invoked with `/command-name`. Universal flags work on all:
-
-```
---plan        Show execution plan first
---think       Standard analysis (~4K tokens)
---think-hard  Deep analysis (~10K tokens)
---ultrathink  Critical analysis (~32K tokens)
---uc          70% token reduction mode
-```
-
-### Development
-| Command | Purpose |
-|---------|---------|
-| `/build` | Build with TDD, templates for React/API/Mobile |
-| `/dev-setup` | Setup dev environment, CI/CD |
-| `/design` | Architect solutions, system design |
-| `/spawn` | Spawn sub-agents for tasks |
-
-### Code Quality
-| Command | Purpose |
-|---------|---------|
-| `/analyze` | Multi-dimensional code analysis |
-| `/improve` | Improve quality, SOLID principles |
-| `/explain` | Comprehensive explanations |
-| `/scan` | Security scanning (OWASP) |
-| `/security-review` | iOS-specific security audit |
-
-### Testing
-| Command | Purpose |
-|---------|---------|
-| `/test` | Create unit/integration/E2E tests |
-| `/playwright-test` | UI verification with Playwright |
-
-### Operations
-| Command | Purpose |
-|---------|---------|
-| `/cleanup` | Clean artifacts, deps, git history |
-| `/migrate` | DB and code migrations |
-| `/deploy` | Deploy to environments |
-| `/git` | Git workflow management |
-
-### iOS Specific
-| Command | Purpose |
-|---------|---------|
-| `/ios-api` | API integration patterns |
-| `/ios26-swiftui` | iOS 26 SwiftUI components |
-| `/swift6-tca` | TCA with Swift 6 concurrency |
-
-See [`claude/commands/`](./claude/commands/) for all 24 commands.
-
----
-
-## MCP Servers (12 Active)
-
-MCP (Model Context Protocol) servers extend Claude's capabilities.
-
-### Active Servers
-
-| Server | Purpose |
-|--------|---------|
-| **sosumi** | Apple documentation (iOS/Swift) - CRITICAL for iOS dev |
-| **github** | GitHub API operations |
-| **git** | Git repository management |
-| **memory** | Cross-session context persistence |
-| **omi** | External memory/conversation records |
-| **sqlite** | Database queries |
-| **puppeteer** | Browser automation |
-| **xcode** | Xcode diagnostics |
-| **fetch** | Web content retrieval |
-| **clay** | Clay API integration |
-| **annas-archive** | Book search and download |
-| **sigskills** | Custom skills server |
-
-### Configuration
-
-MCP servers are configured in `~/.claude.json`:
-
-```json
-{
-  "mcpServers": {
-    "sosumi": {
-      "url": "https://sosumi.ai/mcp"
-    },
-    "github": {
-      "command": "node",
-      "args": ["~/.mcp/fixed-github.js"]
-    }
-  }
-}
-```
-
----
-
-## Third-Party Tools
-
-### Voice & Transcription
-
-#### Typeless
-AI-powered voice-to-text that actually works. Speak naturally, get perfect transcription.
-
-- **What**: Voice input for any app
-- **Why**: 10x faster than typing, works system-wide, low latency
-- **Get it**: [typeless.ai](https://typeless.ai)
-
-### Memory & Context
-
-#### Omi
-Wearable AI memory device + MCP server.
-
-- **What**: Captures conversations, creates memories
-- **Why**: Cross-session context that persists forever
-- **MCP**: Integrated via `mcp__omi__*` tools
-- **Get it**: [omi.me](https://omi.me) <!-- TODO: Add referral link -->
-
----
-
-## Gemini CLI Setup
-
-Gemini CLI is a secondary option. See [`gemini/`](./gemini/) for configuration.
-
-```json
-{
-  "core": {
-    "model": "gemini-3-pro-preview"
-  },
-  "tools": {
-    "autoAccept": true
-  },
-  "ui": {
-    "theme": "Atom One"
-  }
-}
-```
-
----
-
-## n8n Workflows
-
-Self-hosted workflow automation on your Unraid server.
-
-### Key Workflows
-
-| Workflow | Purpose |
-|----------|---------|
-| AI Tips Monitor | Scrapes Reddit/HN for coding tips 3x daily |
-| Sigstack Sync | Syncs rules across all devices |
-| Git Backup | Automated repo backups |
-
-See [`n8n-workflows/`](./n8n-workflows/) for importable workflows.
-
----
-
-## Device Sync (Sigstack Network)
-
-Sync configuration across all your machines via Tailscale:
-
-```
-mba (MacBook Air) ─┬─ tower (Unraid)
-                   ├─ office-pc (Desktop)
-                   └─ deck (Steam Deck)
-```
-
-### Sync Schedule
-- 9:00 AM, 2:00 PM, 6:00 PM
-- Push from mba → all devices
-- Uses rsync over Tailscale mesh
-
-### Manual Sync
-```bash
-~/.claude/scripts/sync-to-sigstack-network.sh
-```
-
----
-
-## Quick Reference
-
-### Daily Workflow
-
-```bash
 # Start Claude Code
 claude
-
-# Or with thinking enabled
-claude --thinking
-
-# Check what's happening
-/context
-
-# Reset if context gets heavy
-/compact
 ```
 
-### Common Tasks
+---
 
-```bash
-# Spawn agents for complex task
-/spawn "Refactor authentication module" --agents 10
+## Stack Architecture
 
-# iOS build and test
-/build --ios --test
+### Core Operations
+| Plugin | Skills | Purpose |
+|--------|--------|---------|
+| **sigstack-core** | 16 | Meta-skills: efficiency, productivity, the default workflow |
+| **superclaude** | 4 | Agent swarms, orchestration, meta-prompts |
 
-# Security scan
-/scan --deep
+### Build Domains
+| Plugin | Skills | Purpose |
+|--------|--------|---------|
+| **ios-dev** | 17 | Swift, SwiftUI, Xcode, CloudKit, SwiftData |
+| **app-dev** | 21 | Features, architecture, services, preferences |
 
-# Deploy
-/deploy --staging
+### Create
+| Plugin | Skills | Purpose |
+|--------|--------|---------|
+| **design-tools** | 27 | AI image, video, audio, UI generation |
+| **media** | 6 | Podcasts, transcription, streaming, analytics |
+
+### Quality
+| Plugin | Skills | Purpose |
+|--------|--------|---------|
+| **testing** | 12 | AI Vision QA, Playwright, coverage, security |
+
+### Intelligence
+| Plugin | Skills | Purpose |
+|--------|--------|---------|
+| **memory-ai** | 6 | Vector DBs, knowledge graphs, context management |
+| **voice-input** | 5 | Speech-to-code, Sled, transcription APIs |
+
+### Automation
+| Plugin | Skills | Purpose |
+|--------|--------|---------|
+| **automation** | 7 | CI/CD, webhooks, Home Assistant, workflows |
+
+### Work
+| Plugin | Skills | Purpose |
+|--------|--------|---------|
+| **work** | 2 | Enterprise apps, Knack, HTI integrations |
+| **dev-essentials** | 4 | Multi-agent coordination, email, performance |
+
+**Total: 127 skills across 12 plugins**
+
+---
+
+## Model Strategy
+
+```
+┌──────────────┬─────────────────────────────────────────────┐
+│ Model        │ Use For                                     │
+├──────────────┼─────────────────────────────────────────────┤
+│ Haiku 3.5    │ File search, formatting, simple tasks       │
+│ Sonnet 4     │ Code writing, reviews, most work            │
+│ Opus 4.5     │ Architecture, complex reasoning, debugging  │
+└──────────────┴─────────────────────────────────────────────┘
+
+Default: Sonnet for quality-speed balance
 ```
 
-### Keyboard Shortcuts (Ghostty)
+---
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+`` | Toggle quick terminal |
-| `Ctrl+h/j/k/l` | Navigate splits |
-| `Cmd+Shift+C` | Quick Claude session |
-| `Cmd+Ctrl+R` | Resume last Claude session |
+## Interface Strategy
+
+```
+┌──────────────┬─────────────────────────────────────────────┐
+│ Interface    │ Use For                                     │
+├──────────────┼─────────────────────────────────────────────┤
+│ Claude Code  │ All codebase work (primary)                 │
+│ Claude Desktop│ PDFs, images, research                     │
+│ API Batch    │ 100+ items, 50% cost savings               │
+│ CLI          │ Quick queries, scripting                    │
+│ MCP          │ External data (Supabase, GitHub, etc.)     │
+└──────────────┴─────────────────────────────────────────────┘
+```
+
+---
+
+## Agent Swarm Patterns
+
+### Exploration (5-10 agents)
+```
+"Find bugs in the codebase"
+→ One agent per major module
+→ Parallel search
+→ Collected findings
+```
+
+### Review (3-4 agents)
+```
+"Review this PR"
+→ security-agent
+→ performance-agent
+→ style-agent
+→ test-coverage-agent
+```
+
+### Build (4 agents)
+```
+"Implement new feature"
+→ ui-agent
+→ logic-agent
+→ test-agent
+→ docs-agent
+```
+
+---
+
+## Superpowers Mode Protocol
+
+**Decision Phase** → **Execution Phase**
+
+### Decision Phase (Expert Partner)
+- Clarify vague requirements before acting
+- Surface footguns and tradeoffs
+- Confirm direction: "So we're doing X to solve Y?"
+
+### Execution Phase (Autonomous Swarm)
+- Spawn 5-20 parallel agents, ship to 100%
+- No check-ins. Fix forward. Only surface true blockers.
+
+### Break to Ask
+- Architectural decisions with major tradeoffs
+- Security implications / destructive operations
+- Requirements contradicting established patterns
+
+---
+
+## Token Economy
+
+```
+Save tokens:
+- Screenshots over text descriptions (80% savings)
+- MCP over copy-paste (90% savings)
+- Skills over repeated prompts (95% savings)
+- Haiku over Sonnet when possible (75% savings)
+- Batch API over real-time (50% savings)
+
+Spend tokens:
+- Complex reasoning (use Opus)
+- Exploration (use agents)
+- Quality code (use Sonnet)
+```
+
+---
+
+## MCP Priority
+
+```
+1. Supabase    → Database queries, no copy-paste
+2. GitHub      → PRs, issues, repos directly
+3. Memory      → Persistent knowledge graph
+4. Playwright  → Browser automation, screenshots
+5. Context7    → Library documentation
+6. Sosumi      → Apple developer docs
+```
+
+---
+
+## Voice Stack
+
+```
+Input:   Typeless (daily dictation)
+Bridge:  Sled (mobile → Claude Code over Tailscale)
+Output:  Code changes, commits, deploys
+```
+
+---
+
+## Memory Architecture
+
+```
+┌─────────────────┐
+│ Session Memory  │ ← Current conversation
+├─────────────────┤
+│ Memory MCP      │ ← Facts, preferences, decisions
+├─────────────────┤
+│ CLAUDE.md       │ ← Project rules (auto-loaded)
+├─────────────────┤
+│ Skills          │ ← Reusable prompts
+├─────────────────┤
+│ Checkpoints     │ ← Session handoffs
+└─────────────────┘
+
+Never repeat context. Store once, recall forever.
+```
+
+---
+
+## Daily Rhythm
+
+### Morning (2 min)
+```
+"Status" → Load context
+"Today's focus: [area]" → Set priority
+```
+
+### During Work
+```
+Build → Screenshot → Vision QA → Fix → Repeat
+```
+
+### Evening (1 min)
+```
+"Checkpoint" → Save state for tomorrow
+```
+
+---
+
+## Featured Skills by Domain
+
+### sigstack-core (16 skills)
+| Skill | Purpose |
+|-------|---------|
+| `vision-qa-workflow` | THE default workflow |
+| `sigstack-quickstart` | Get started in 5 minutes |
+| `token-optimizer` | Reduce tokens, same quality |
+| `interface-picker` | Code vs Desktop vs API vs MCP |
+| `agent-patterns` | When to spawn agents |
+| `prompt-compression` | Shorter prompts, better results |
+| `daily-driver` | Start each day fast |
+| `session-handoff` | End well, start fast |
+
+### ios-dev (17 skills)
+| Skill | Purpose |
+|-------|---------|
+| `swift-expert` | Swift language patterns |
+| `ios-build-expert` | Xcode build configuration |
+| `cloudkit-expert` | CloudKit integration |
+| `performance-expert` | iOS performance optimization |
+| `tca-migration` | The Composable Architecture |
+| `swiftui-codegen-expert` | AI SwiftUI generation |
+| `testflight-expert` | Beta distribution |
+| `app-store-connect-expert` | App Store API |
+
+### design-tools (27 skills)
+| Skill | Purpose |
+|-------|---------|
+| `glif-expert` | Glif workflows |
+| `stitch-expert` | Stitch designs |
+| `image-gen-expert` | AI images |
+| `elevenlabs-expert` | Voice synthesis |
+| `kling-video-expert` | Kling video |
+| `runway-video-expert` | Runway video |
+| `midjourney-expert` | Midjourney |
+| `recraft-expert` | Recraft AI |
+
+### superclaude (4 skills)
+| Skill | Purpose |
+|-------|---------|
+| `spawn-swarm` | Parallel agent execution |
+| `analyze-codebase` | Deep codebase analysis |
+| `orchestrate-agents` | Multi-agent workflows |
+| `meta-prompt` | Optimal prompt generation |
 
 ---
 
 ## Installation Checklist
 
-- [ ] Install Ghostty
+- [ ] Clone sigstack to `~/.sigstack`
+- [ ] Run `./setup.sh`
 - [ ] Install Claude Code CLI
-- [ ] Clone this repo to `~/.sigstack`
-- [ ] Symlink configs: `./setup.sh`
-- [ ] Install MCP servers
-- [ ] Set up Tailscale (optional, for multi-device)
-- [ ] Install Typeless (optional)
-- [ ] Install Omi (optional)
+- [ ] Configure MCP servers
+- [ ] Set up Typeless (optional)
+- [ ] Configure Sled for voice (optional)
+
+---
+
+## The Sigstack Promise
+
+You describe the outcome.
+Claude handles the implementation.
+Screenshots verify the result.
+Agents parallelize the work.
+Memory preserves the knowledge.
+Voice captures your ideas.
+
+**Build faster. Ship more. Learn always.**
 
 ---
 
 ## Resources
 
 - [Claude Code Documentation](https://docs.anthropic.com/claude-code)
-- [Ghostty](https://ghostty.org)
-- [n8n Documentation](https://docs.n8n.io)
-- [Tailscale](https://tailscale.com)
+- [Ghostty Terminal](https://ghostty.org)
+- [Typeless Voice Input](https://typeless.ai)
 
 ---
 
 **Built with vibes by [@willsigmon](https://github.com/willsigmon)**
 
-*"Act like a healing swarm of nanobots. Find and fix every bug, scrub every infection, optimize every inefficiency until nothing remains but a pristine, customer-delighting experience."*
+*February 1, 2026 — Sigstack 2.0*
