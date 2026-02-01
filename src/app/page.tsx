@@ -1,12 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useSpring, useMotionValue, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect, useMemo } from "react";
 
 // Magnetic button component - juicy and playful
-function MagneticButton({ children, href, className, variant = "default" }: { children: React.ReactNode; href: string; className?: string; variant?: "default" | "primary" | "secondary" }) {
+function MagneticButton({ children, href, className }: { children: React.ReactNode; href: string; className?: string }) {
   const ref = useRef<HTMLAnchorElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -32,6 +31,7 @@ function MagneticButton({ children, href, className, variant = "default" }: { ch
       ref={ref}
       href={href}
       target="_blank"
+      rel="noopener noreferrer"
       className={`relative overflow-hidden ${className}`}
       style={{ x: springX, y: springY }}
       onMouseMove={handleMouseMove}
@@ -62,6 +62,7 @@ function BouncyButton({ children, href, className, glow = false }: { children: R
     <motion.a
       href={href}
       target="_blank"
+      rel="noopener noreferrer"
       className={`relative group ${className}`}
       whileHover={{
         scale: 1.08,
@@ -826,10 +827,14 @@ export default function Home() {
   useEffect(() => {
     setIsClient(true);
     // Check if this is first visit - show animation only on first visit
-    const hasVisited = localStorage.getItem("sigstack-visited");
-    if (!hasVisited) {
-      setShouldSkipAnimation(false);
-      localStorage.setItem("sigstack-visited", "true");
+    try {
+      const hasVisited = localStorage.getItem("sigstack-visited");
+      if (!hasVisited) {
+        setShouldSkipAnimation(false);
+        localStorage.setItem("sigstack-visited", "true");
+      }
+    } catch {
+      // localStorage not available (private browsing, etc.)
     }
   }, []);
 
@@ -844,6 +849,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-[#0f0a1f] to-slate-900 overflow-hidden">
+      {/* Skip to main content link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-violet-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-400"
+      >
+        Skip to main content
+      </a>
       {/* Breathing background wallpaper - CSS animations for smoothness */}
       <div className="fixed inset-0 -z-10">
         {/* Main breathing gradient - pure CSS */}
@@ -1071,9 +1083,11 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* The Stack */}
-      <section className="relative mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
-        <FloatingAccents count={8} color="purple" />
+      {/* Main content area for accessibility */}
+      <main id="main-content">
+        {/* The Stack */}
+        <section className="relative mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
+          <FloatingAccents count={8} color="purple" />
         <FadeIn>
           <h2 className="text-3xl sm:text-4xl font-black text-white mb-2 text-center">The Stack</h2>
           <p className="text-zinc-400 text-sm sm:text-base text-center mb-8 sm:mb-10">Tools that power the workflow</p>
@@ -1419,6 +1433,7 @@ claude`}</CodeBlock>
                 key={item.name}
                 href={item.url}
                 target="_blank"
+                rel="noopener noreferrer"
                 className={`group relative inline-flex items-center gap-2 sm:gap-3 rounded-xl sm:rounded-2xl px-4 sm:px-7 py-3 sm:py-4 font-semibold text-sm sm:text-base overflow-hidden ${
                   item.highlight
                     ? "bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 text-white shadow-2xl shadow-purple-500/40"
@@ -1464,6 +1479,7 @@ claude`}</CodeBlock>
           </div>
         </FadeIn>
       </section>
+      </main>
 
       {/* Footer */}
       <footer className="border-t border-white/[0.1] py-10 sm:py-14">
@@ -1487,6 +1503,7 @@ claude`}</CodeBlock>
                   key={social.href}
                   href={social.href}
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="text-zinc-400 hover:text-white transition-colors p-1"
                   whileHover={{ scale: 1.2, y: -2 }}
                 >
