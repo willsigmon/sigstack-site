@@ -127,7 +127,7 @@ const coreStack = [
   {
     name: "Claude Code",
     description: "CLI-first AI coding",
-    logo: "https://cdn.simpleicons.org/anthropic/D4A574",
+    logo: "/icons/anthropic.svg",
     bgColor: "bg-gradient-to-br from-[#D4A574]/30 to-[#B8956A]/40",
     glowColor: "#D4A574",
     url: "https://claude.ai/code",
@@ -166,7 +166,7 @@ const terminalStack = [
   {
     name: "iTerm2",
     description: "macOS terminal",
-    logo: "https://cdn.simpleicons.org/iterm2/10B981",
+    logo: "/icons/iterm2.svg",
     bgColor: "bg-gradient-to-br from-[#10B981]/30 to-[#059669]/40",
     glowColor: "#10B981",
     url: "https://iterm2.com",
@@ -185,7 +185,7 @@ const agentStack = [
   {
     name: "Plural",
     description: "Parallel branches",
-    logo: "https://cdn.simpleicons.org/git/F05032",
+    logo: "/icons/git.svg",
     bgColor: "bg-gradient-to-br from-orange-500/30 to-red-500/40",
     glowColor: "#F05032",
     url: "https://github.com/zhubert/plural",
@@ -193,7 +193,7 @@ const agentStack = [
   {
     name: "Agor",
     description: "Agent canvas",
-    logo: "https://cdn.simpleicons.org/figma/F24E1E",
+    logo: "/icons/figma.svg",
     bgColor: "bg-gradient-to-br from-pink-500/30 to-rose-500/40",
     glowColor: "#F24E1E",
     url: "https://github.com/preset-io/agor",
@@ -201,7 +201,7 @@ const agentStack = [
   {
     name: "Sled",
     description: "Mobile voice",
-    logo: "https://cdn.simpleicons.org/airplayaudio/white",
+    logo: "/icons/airplay.svg",
     bgColor: "bg-gradient-to-br from-cyan-500/30 to-teal-500/40",
     glowColor: "#06B6D4",
     url: "https://sled.layercode.com",
@@ -212,7 +212,7 @@ const infraStack = [
   {
     name: "GitHub",
     description: "Code & PRs",
-    logo: "https://cdn.simpleicons.org/github/white",
+    logo: "/icons/github.svg",
     bgColor: "bg-gradient-to-br from-zinc-400/30 to-zinc-600/40",
     glowColor: "#A1A1AA",
     url: "https://github.com",
@@ -220,7 +220,7 @@ const infraStack = [
   {
     name: "Vercel",
     description: "Deploy",
-    logo: "https://cdn.simpleicons.org/vercel/white",
+    logo: "/icons/vercel.svg",
     bgColor: "bg-gradient-to-br from-zinc-300/30 to-zinc-500/40",
     glowColor: "#FFFFFF",
     url: "https://vercel.com",
@@ -228,7 +228,7 @@ const infraStack = [
   {
     name: "Supabase",
     description: "Postgres & Auth",
-    logo: "https://cdn.simpleicons.org/supabase/3FCF8E",
+    logo: "/icons/supabase.svg",
     bgColor: "bg-gradient-to-br from-[#3FCF8E]/30 to-[#22C55E]/40",
     glowColor: "#3FCF8E",
     url: "https://supabase.com",
@@ -443,7 +443,7 @@ function NewsletterCard({
         <motion.button
           type="submit"
           disabled={status === "loading" || status === "success"}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r ${buttonColors[accentColor]} transition-all disabled:opacity-50`}
+          className={`rounded-lg px-5 py-3 text-sm font-semibold text-white bg-gradient-to-r ${buttonColors[accentColor]} transition-all disabled:opacity-50 cursor-pointer min-h-[44px]`}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -1036,19 +1036,20 @@ export default function Home() {
                 <div className={`text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent drop-shadow-lg`}>
                   {stat.value}
                 </div>
-                <div className="text-[10px] sm:text-xs text-zinc-400 mt-1">{stat.label}</div>
+                <div className="text-xs sm:text-xs text-zinc-400 mt-1">{stat.label}</div>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="flex flex-col sm:flex-row gap-3 sm:gap-5 justify-center px-4"
-          >
-            <BouncyButton
+          {/* CTA Buttons - Primary navigation */}
+          <nav aria-label="Primary actions">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="flex flex-col sm:flex-row gap-3 sm:gap-5 justify-center px-4"
+            >
+              <BouncyButton
               href="https://github.com/willsigmon/sigstack"
               glow
               className="inline-flex items-center justify-center gap-2 sm:gap-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-white via-zinc-100 to-white px-6 sm:px-9 py-4 sm:py-5 text-slate-900 font-bold text-base sm:text-lg shadow-2xl shadow-white/25 border-2 border-white/50"
@@ -1084,7 +1085,8 @@ export default function Home() {
                 </svg>
               </motion.span>
             </motion.a>
-          </motion.div>
+            </motion.div>
+          </nav>
         </motion.div>
       </section>
 
@@ -1263,7 +1265,7 @@ claude`}</CodeBlock>
                 transition={{ type: "spring", stiffness: 400 }}
               >
                 <h3 className="text-sm sm:text-lg font-bold text-white mb-1 sm:mb-2">{item.title}</h3>
-                <p className="text-[10px] sm:text-sm text-zinc-300 leading-relaxed">{item.description}</p>
+                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">{item.description}</p>
               </motion.div>
             </FadeIn>
           ))}
@@ -1324,7 +1326,7 @@ claude`}</CodeBlock>
                   whileHover={{ y: -3 }}
                 >
                   <div className="font-semibold text-white text-xs sm:text-sm mb-0.5 sm:mb-1">{item.principle}</div>
-                  <div className="text-[10px] sm:text-sm text-zinc-400 leading-relaxed">{item.meaning}</div>
+                  <div className="text-xs sm:text-sm text-zinc-400 leading-relaxed">{item.meaning}</div>
                 </motion.div>
               ))}
             </div>
@@ -1354,7 +1356,7 @@ claude`}</CodeBlock>
 
               {/* Content */}
               <div className="flex-1 text-center sm:text-left">
-                <p className="text-zinc-500 text-[10px] sm:text-xs mb-0.5 sm:mb-1">Built with this stack</p>
+                <p className="text-zinc-500 text-xs sm:text-xs mb-0.5 sm:mb-1">Built with this stack</p>
                 <h3 className="text-base sm:text-lg font-bold text-white mb-0.5 sm:mb-1">Leavn.app</h3>
                 <p className="text-zinc-400 text-xs sm:text-sm max-w-md">
                   A Bible study app built ~90% with Claude Code using this stack.

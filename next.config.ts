@@ -3,7 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "cdn.simpleicons.org" },
       { protocol: "https", hostname: "cdn.prod.website-files.com" },
       { protocol: "https", hostname: "www.omi.me" },
       { protocol: "https", hostname: "www.typeless.com" },
@@ -23,7 +22,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https://cdn.simpleicons.org https://cdn.prod.website-files.com https://www.omi.me https://www.typeless.com https://framerusercontent.com https://iterm2.com https://is1-ssl.mzstatic.com",
+              "img-src 'self' data: https://cdn.prod.website-files.com https://www.omi.me https://www.typeless.com https://framerusercontent.com https://iterm2.com https://is1-ssl.mzstatic.com",
               "font-src 'self' data:",
               "connect-src 'self' https://api.resend.com",
               "frame-ancestors 'none'",
