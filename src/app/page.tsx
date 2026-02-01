@@ -1195,11 +1195,14 @@ export default function Home() {
 
         <FadeIn delay={0.1}>
           <div className="max-w-3xl mx-auto">
-            <CodeBlock>{`# Clone and install
-git clone https://github.com/willsigmon/sigstack.git && cd sigstack && \\
-cp -r skills/* ~/.claude/skills/ && \\
-cp -r commands/* ~/.claude/commands/ && \\
-mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
+            <CodeBlock>{`# Clone sigstack
+git clone https://github.com/willsigmon/sigstack.git ~/.sigstack
+
+# Run setup (installs plugins to Claude Code)
+cd ~/.sigstack && ./setup.sh
+
+# Start Claude Code
+claude`}</CodeBlock>
           </div>
         </FadeIn>
       </section>
@@ -1224,13 +1227,13 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
               gradient: "from-green-500/30 to-emerald-500/30",
             },
             {
-              title: "iOS Bundle",
-              description: "Sosumi + Ralph Wiggum protocol + Apple docs",
+              title: "Model Strategy",
+              description: "Haiku for search, Sonnet for code, Opus for architecture",
               gradient: "from-pink-500/30 to-rose-500/30",
             },
             {
-              title: "Sigstack Network",
-              description: "Multi-device sync via Tailscale for context",
+              title: "AI Vision QA",
+              description: "Screenshot → Claude reviews → Fix → Repeat until perfect",
               gradient: "from-purple-500/30 to-violet-500/30",
             },
           ].map((item, i) => (
@@ -1265,18 +1268,32 @@ mkdir -p ~/.claude/rules && cp -r rules/* ~/.claude/rules/`}</CodeBlock>
             />
 
             <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white mb-3 sm:mb-4 text-center">
-              Philosophy: Nanobot Healing Swarm
+              The Sigstack Loop
             </h2>
-            <p className="text-zinc-300 text-xs sm:text-sm max-w-2xl mx-auto text-center mb-8 sm:mb-12">
-              My CLAUDE.md instructs Claude to act as a &ldquo;healing swarm of nanobots&rdquo;&mdash;find every bug,
-              scrub every infection, optimize every inefficiency.
+            <p className="text-zinc-300 text-xs sm:text-sm max-w-2xl mx-auto text-center mb-6 sm:mb-8">
+              THE workflow for every feature, bug fix, and change.
             </p>
+
+            {/* The Loop Visualization */}
+            <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-3 mb-8 sm:mb-12 text-xs sm:text-sm">
+              {["DESCRIBE", "BUILD", "SCREENSHOT", "VISION QA", "FIX"].map((step, i) => (
+                <div key={step} className="flex items-center gap-2 sm:gap-3">
+                  <span className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-gradient-to-r from-purple-500/30 to-blue-500/30 text-white font-semibold border border-white/20">
+                    {step}
+                  </span>
+                  {i < 4 && <span className="text-zinc-500">→</span>}
+                </div>
+              ))}
+              <span className="text-zinc-500 ml-1">↻</span>
+            </div>
+
+            <h3 className="text-base sm:text-lg font-bold text-white mb-4 text-center">Superpowers Mode</h3>
             <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
               {[
-                { principle: "Tools first", meaning: "Check MCP/skill before writing code" },
-                { principle: "Parallel agents", meaning: "Spawn 20+ agents for complex tasks" },
-                { principle: "Context is attention", meaning: "Manage 60% threshold, use /compact" },
-                { principle: "Memory graph", meaning: "Use Omi for session continuity" },
+                { principle: "Decision Phase", meaning: "Clarify requirements, surface tradeoffs" },
+                { principle: "Execution Phase", meaning: "Spawn 5-20 agents, ship to 100%" },
+                { principle: "Screenshots > Text", meaning: "80% token savings with visual QA" },
+                { principle: "Memory Persistence", meaning: "Never explain the same thing twice" },
               ].map((item, i) => (
                 <motion.div
                   key={item.principle}

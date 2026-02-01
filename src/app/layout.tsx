@@ -14,21 +14,21 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://sigstack.dev"),
-  title: "sigstack - Claude Code Stack for AI-Powered Development",
-  description: "89 skills, 24 commands, iOS bundle + Apple's hidden docs. My personal Claude Code stack for shipping software with AI. Ready to clone.",
-  keywords: ["Claude Code", "AI coding", "developer tools", "MCP servers", "Claude AI", "Opus 4.5"],
+  title: "Sigstack 2.0 — The Vibe Coder's Operating System for Claude",
+  description: "127 skills across 12 plugins. AI Vision QA workflow: Build → Screenshot → Claude Reviews → Fix → Repeat. The complete Claude Code stack for shipping software with AI.",
+  keywords: ["Claude Code", "AI coding", "developer tools", "MCP servers", "Claude AI", "Opus 4.5", "vibe coding", "AI Vision QA"],
   authors: [{ name: "Will Sigmon", url: "https://willsigmon.media" }],
   openGraph: {
-    title: "sigstack - Claude Code Stack for AI-Powered Development",
-    description: "89 skills, 24 commands, iOS bundle + Apple's hidden docs. Ready to clone.",
+    title: "Sigstack 2.0 — 127 Skills for Vibe Coders",
+    description: "AI Vision QA workflow: Build → Screenshot → Claude Reviews → Fix → Repeat. Ready to clone.",
     url: "https://sigstack.dev",
     siteName: "sigstack",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "sigstack - Claude Code Stack",
-    description: "89 skills, 24 commands, iOS bundle + Apple's hidden docs. Ready to clone.",
+    title: "Sigstack 2.0 — The Vibe Coder's OS",
+    description: "127 skills, 12 plugins, AI Vision QA workflow. Build → Screenshot → Fix → Ship.",
     creator: "@willsigmon",
   },
 };
