@@ -709,7 +709,7 @@ function StackingTitle({ onComplete, onReplay, skipAnimation = false }: { onComp
           return (
             <motion.span
               key={i}
-              className="text-6xl sm:text-8xl font-black bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent absolute leading-[1.15]"
+              className="text-6xl sm:text-8xl font-black bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent absolute"
               style={{
                 textShadow: "0 4px 30px rgba(139, 92, 246, 0.5), 0 8px 60px rgba(59, 130, 246, 0.3)",
                 filter: "drop-shadow(0 4px 20px rgba(139, 92, 246, 0.4)) drop-shadow(0 8px 40px rgba(59, 130, 246, 0.2))",
