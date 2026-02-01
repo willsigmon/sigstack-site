@@ -8,13 +8,75 @@ const AUDIENCES = {
   personal_digest: process.env.RESEND_AUDIENCE_PERSONAL || '',
 };
 
+// Simple in-memory rate limiting (per IP, 5 requests per minute)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 60 * 1000; // 1 minute
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+
+  if (!entry || now > entry.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_WINDOW_MS });
+    return false;
+  }
+
+  if (entry.count >= RATE_LIMIT) {
+    return true;
+  }
+
+  entry.count++;
+  return false;
+}
+
+// Email validation
+function isValidEmail(email: string): boolean {
+  if (typeof email !== 'string' || email.length > 254) {
+    return false;
+  }
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  return emailRegex.test(email);
+}
+
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+               request.headers.get('x-real-ip') ||
+               'unknown';
+
+    if (isRateLimited(ip)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
+    // Validate origin (CSRF protection)
+    const origin = request.headers.get('origin');
+    const allowedOrigins = ['https://sigstack.dev', 'http://localhost:3000'];
+    if (origin && !allowedOrigins.includes(origin)) {
+      return NextResponse.json(
+        { error: 'Invalid origin' },
+        { status: 403 }
+      );
+    }
+
     const { email, newsletter } = await request.json();
 
-    if (!email || !newsletter) {
+    // Validate email
+    if (!email || !isValidEmail(email)) {
       return NextResponse.json(
-        { error: 'Email and newsletter type required' },
+        { error: 'Valid email address required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate newsletter type
+    if (!newsletter || typeof newsletter !== 'string') {
+      return NextResponse.json(
+        { error: 'Newsletter type required' },
         { status: 400 }
       );
     }
@@ -28,6 +90,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Sanitize email
+    const sanitizedEmail = email.trim().toLowerCase();
+
     // Add contact to Resend audience
     const response = await fetch(`https://api.resend.com/audiences/${audienceId}/contacts`, {
       method: 'POST',
@@ -36,7 +101,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email,
+        email: sanitizedEmail,
         unsubscribed: false,
       }),
     });
