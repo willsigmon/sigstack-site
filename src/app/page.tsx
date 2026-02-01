@@ -1010,10 +1010,24 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-zinc-400 mb-12"
+            className="text-zinc-400 mb-6"
           >
             127 skills · 12 plugins · 16 MCP servers · AI Vision QA workflow · Ready to clone
           </motion.p>
+
+          {/* Last Updated Badge */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+            className="mb-10"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.08] border border-white/[0.15] text-sm">
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-zinc-400">Last updated:</span>
+              <span className="text-white font-medium">Feb 1, 2026 · 02:15 UTC</span>
+            </span>
+          </motion.div>
 
           {/* Colorful Stats */}
           <motion.div
