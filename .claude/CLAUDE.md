@@ -1,4 +1,4 @@
-# SigStack Site Project Context
+# SigStack 3.1 Site Project Context
 
 ## Business Data Edits
 

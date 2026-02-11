@@ -1025,7 +1025,7 @@ export default function Home() {
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.08] border border-white/[0.15] text-sm">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="text-zinc-400">Last updated:</span>
-              <span className="text-white font-medium">Feb 1, 2026 · 9:15pm ET / 6:15pm PT</span>
+              <span className="text-white font-medium">Feb 11, 2026</span>
             </span>
           </motion.div>
 
